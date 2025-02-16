@@ -1,7 +1,8 @@
-import subprocess, yt_dlp, requests, re, time
+import subprocess, yt_dlp, requests, re
 from bs4 import BeautifulSoup
-from datetime import datetime
+
 from settings import *
+from config import *
 
 
 def get_soup(url):
