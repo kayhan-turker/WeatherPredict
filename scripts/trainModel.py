@@ -194,7 +194,8 @@ d_label_loss_factor = 1.5
 # Create directory to store outputs
 ts = datetime.now()
 ts = ts.strftime("%Y_%m_%d_%H_%M_%S")
-output_folder = GENERATION_OUTPUT_PATH + "training/" + ts
+MODEL_NAME = ts
+output_folder = GENERATION_OUTPUT_PATH + "training/" + MODEL_NAME
 os.makedirs(output_folder, exist_ok=True)
 
 for epoch in range(epochs):
@@ -245,7 +246,7 @@ for epoch in range(epochs):
 
     # Save model every 10 epochs
     if epoch % 10 == 0:
-        save_path = MODEL_SAVE_PATH + get_model_save_name(epoch)
+        save_path = MODEL_SAVE_PATH + get_model_save_name(MODEL_NAME, epoch)
         torch.save(generator.state_dict(), save_path)
         print("\n" + "=" * 100)
         print(f"Saved Generator Model: {save_path}")

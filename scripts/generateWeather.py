@@ -8,7 +8,8 @@ from settings import *  # Ensure the settings match
 
 # Load the trained generator
 LOAD_EPOCH = 10
-model_name = get_model_save_name(LOAD_EPOCH)
+MODEL_NAME = ""
+model_name = get_model_save_name(MODEL_NAME, LOAD_EPOCH)
 model_path = MODEL_SAVE_PATH + model_name
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

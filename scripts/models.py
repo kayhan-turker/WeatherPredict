@@ -92,7 +92,5 @@ class LabelPredictor(nn.Module):
         return self.fc2(x)
 
 
-def get_model_save_name(epoch):
-    ts = datetime.now()
-    ts = ts.strftime("%Y_%m_%d_%H_%M_%S")
-    return f"{ts}_gen_epoch_{epoch + 1}.pth"
+def get_model_save_name(model_name, epoch):
+    return f"{model_name}_gen_epoch_{epoch + 1}.pth"
