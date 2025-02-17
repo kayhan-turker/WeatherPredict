@@ -213,13 +213,13 @@ for epoch in range(epochs):
         latent = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)
         linear_part = torch.rand(labels.shape[0], 2).to(device, non_blocking=True) * 2 - 1
         normal_part = torch.randn(labels.shape[0], labels.shape[1] - 2).to(device, non_blocking=True)
-        random_labels = torch.cat([linear_part, normal_part], dim=1)
+        fake_labels = torch.cat([linear_part, normal_part], dim=1)
 
-        fake_images = generator(latent, random_labels)
+        fake_images = generator(latent, fake_labels)
         pred_fake = discriminator(fake_images)
 
         loss_G_realism = criterion_realism(pred_fake[:, -1], torch.ones_like(pred_fake[:, -1], device=device))
-        loss_G_labels = criterion_labels(pred_fake[:, :-1], random_labels)
+        loss_G_labels = criterion_labels(pred_fake[:, :-1], fake_labels)
 
         loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels
 
@@ -237,7 +237,7 @@ for epoch in range(epochs):
         loss_D_realism_real = criterion_realism(pred_real[:, -1], torch.ones_like(pred_real[:, -1], device=device))
         loss_D_realism_fake = criterion_realism(pred_fake[:, -1], torch.zeros_like(pred_fake[:, -1], device=device))
         loss_D_labels_real = criterion_labels(pred_real[:, :-1], labels)
-        loss_D_labels_fake = criterion_labels(pred_fake[:, :-1], random_labels)
+        loss_D_labels_fake = criterion_labels(pred_fake[:, :-1], fake_labels)
 
         loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * loss_D_labels_real
 
@@ -257,7 +257,7 @@ for epoch in range(epochs):
         print(f"Saved Generator Model: {save_path}")
         print("\n" + "=" * 100)
 
-    output_name = get_image_output_name(random_labels, label_means, label_stds)
+    output_name = get_image_output_name(fake_labels, label_means, label_stds)
 
     fake_image_np = ((fake_images[0].detach().cpu().numpy().transpose(1, 2, 0) + 1) * 127.5).astype(np.uint8)
     fake_image_pil = Image.fromarray(fake_image_np)
@@ -279,7 +279,7 @@ for epoch in range(epochs):
     print(f"Epoch {epoch + 1}/{epochs}, Loss_G: {loss_G.item():.3f}, Loss_D: {loss_D.item():.3f}")
     print("")
     print(f"G Realism Score: {torch.abs(torch.ones_like(pred_fake[:, -1]) - pred_fake[:, -1]).mean().item():.3f} "
-          f"Label Score: [{', '.join([f'{torch.abs(random_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
+          f"Label Score: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print(f"D Realism Score: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
           f"Label Score: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print("")
@@ -291,7 +291,7 @@ for epoch in range(epochs):
     print("                                  ['Date', 'Time', 'Temp', 'Press', 'Dew', 'Hum', 'Dir', 'Alt']")
     print("Real Input Labels:               ", [f"{x:.1f}" for x in labels[0].cpu().numpy()])
     print("Predicted Labels (Real):         ", [f"{x:.1f}" for x in pred_real[0, :-1].detach().cpu().numpy()])
-    print("Random Labels (Generator Input): ", [f"{x:.1f}" for x in random_labels[0].cpu().numpy()])
+    print("Random Labels (Generator Input): ", [f"{x:.1f}" for x in fake_labels[0].cpu().numpy()])
     print("Predicted Labels (Fake):         ", [f"{x:.1f}" for x in pred_fake[0, :-1].detach().cpu().numpy()])
     print(f"Real Check (Real): {pred_real[0, -1].item():.1f} | (Fake): {pred_fake[0, -1].item():.1f}")
     print("-" * 100)

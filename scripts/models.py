@@ -56,11 +56,11 @@ class FakeImageGenerator(nn.Module):
         self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
         self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1)
 
-        self.film1 = FiLMLayer(128, 128)  # Reduce FiLM input size
-        self.film2 = FiLMLayer(64, 64)
-        self.film3 = FiLMLayer(32, 32)
+        self.film1 = FiLMLayer(128, 128)
+        self.film2 = FiLMLayer(64, 128)
+        self.film3 = FiLMLayer(32, 128)
 
-        self.reduce_z = nn.Linear(256 * 8 * 16, 128)  # Reduce `z` size for FiLM
+        self.fc_film = nn.Linear(256 * 8 * 16, 128)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -71,14 +71,12 @@ class FakeImageGenerator(nn.Module):
         z = z_labels + z_latent
 
         x = z.view(-1, 256, 8, 16)
-        z_film = self.reduce_z(z)
-
+        z_film = self.fc_film(z)
         x = self.leaky_relu(self.film1(self.conv1(x), z_film))
         x = self.leaky_relu(self.film2(self.conv2(x), z_film))
         x = self.leaky_relu(self.film3(self.conv3(x), z_film))
         x = self.tanh(self.conv4(x))
         return x
-
 
 
 class LabelPredictor(nn.Module):
