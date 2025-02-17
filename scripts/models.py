@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 from datetime import datetime
 
+from settings import *
 from config import *
 
 
@@ -46,7 +47,7 @@ class FiLMLayer(nn.Module):
 
 
 class FakeImageGenerator(nn.Module):
-    def __init__(self, latent_dim, num_labels):
+    def __init__(self, latent_dim, num_labels, label_means, label_stds):
         super(FakeImageGenerator, self).__init__()
         self.fc = nn.Linear(latent_dim + num_labels, 256 * 8 * 16)
         self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
@@ -94,3 +95,13 @@ class LabelPredictor(nn.Module):
 
 def get_model_save_name(model_name, epoch):
     return f"{model_name}_gen_epoch_{epoch + 1}.pth"
+
+
+def get_image_output_name(labels, label_means, label_stds):
+    output_name = [x for x in labels[0].detach().cpu().numpy()]
+    non_shift_labels = len(output_name) - len(SELECTED_INDICES)
+    for x in range(non_shift_labels, len(output_name)):
+        output_name[x] = output_name[x] * label_stds[x - non_shift_labels] + label_means[x - non_shift_labels]
+    output_name[0] = output_name[0] / 2 + 0.5
+    output_name[1] = output_name[1] / 2 + 0.5
+    return "_".join(f"{output_name[x]:.2f}" if x < 2 else f"{int(round(output_name[x]))}" for x in range(len(output_name)))

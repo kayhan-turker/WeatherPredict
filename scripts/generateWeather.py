@@ -8,8 +8,8 @@ from settings import *  # Ensure the settings match
 
 # Load the trained generator
 LOAD_EPOCH = 10
-MODEL_NAME = ""
-model_name = get_model_save_name(MODEL_NAME, LOAD_EPOCH)
+model_date = "2025_02_16_23_43_51"
+model_name = get_model_save_name(model_date, LOAD_EPOCH)
 model_path = MODEL_SAVE_PATH + model_name
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -17,7 +17,10 @@ torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
 generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
-generator.load_state_dict(torch.load(model_path, map_location=device))
+checkpoint = torch.load(model_path, map_location=device)
+generator.load_state_dict(checkpoint["state_dict"])
+generator.label_means = checkpoint["label_means"]
+generator.label_stds = checkpoint["label_stds"]
 generator.eval()
 
 output_folder = GENERATION_OUTPUT_PATH + model_name + "/"
@@ -38,4 +41,6 @@ def generate_image(input_labels):
 example_labels = [0.5, -0.2, 1.1, 0.3, -0.9, 0.4, -0.1, 0.2]  # Match the expected label count
 generated_img = generate_image(example_labels)
 generated_img.show()  # View the image
-generated_img.save("generated_example.png")  # Save the image
+
+output_name = get_image_output_name(example_labels, generator.label_means, generator.label_stds)
+generated_img.save(model_date + "/" + output_name)  # Save the image

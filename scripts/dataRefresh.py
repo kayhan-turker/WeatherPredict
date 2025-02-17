@@ -1,5 +1,5 @@
 import os
-from settings import *
+from config import *
 
 folder_path = TRAINING_DATA_PATH
 output_file = WEATHER_DATA_PATH + "raw_data.txt"

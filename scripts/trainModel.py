@@ -163,7 +163,7 @@ print("8. Training Setup")
 print("-" * 100)
 
 print("  Initialize models.")
-generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
+generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS, label_means, label_stds).to(device)
 discriminator = LabelPredictor(NUM_LABELS).to(device)
 print("  Apply weights.")
 generator.apply(weights_init)
@@ -247,24 +247,20 @@ for epoch in range(epochs):
     # Save model every 10 epochs
     if epoch % 10 == 0:
         save_path = MODEL_SAVE_PATH + get_model_save_name(MODEL_NAME, epoch)
-        torch.save(generator.state_dict(), save_path)
+        torch.save({
+            "state_dict": generator.state_dict(),
+            "label_means": label_means,
+            "label_stds": label_stds
+        }, save_path)
         print("\n" + "=" * 100)
         print(f"Saved Generator Model: {save_path}")
         print("\n" + "=" * 100)
 
-    # Save and print fake image & labels after each epoch
-    output_name = [x for x in random_labels[0].detach().cpu().numpy()]
-    non_shift_labels = len(output_name) - len(SELECTED_INDICES)
-    for x in range(non_shift_labels, len(output_name)):
-        output_name[x] = output_name[x] * label_stds[x - non_shift_labels] + label_means[x - non_shift_labels]
-    output_name[0] = output_name[0] / 2 + 0.5
-    output_name[1] = output_name[1] / 2 + 0.5
-    output_str = "_".join(
-        f"{output_name[x]:.2f}" if x < 2 else f"{int(round(output_name[x]))}" for x in range(len(output_name)))
+    output_name = get_image_output_name(random_labels, label_means, label_stds)
 
     fake_image_np = ((fake_images[0].detach().cpu().numpy().transpose(1, 2, 0) + 1) * 127.5).astype(np.uint8)
     fake_image_pil = Image.fromarray(fake_image_np)
-    fake_image_pil.save(f"{output_folder}/E{(epoch + 1):03}_{output_str}.png")  # Save fake image
+    fake_image_pil.save(f"{output_folder}/E{(epoch + 1):03}_{output_name}.png")  # Save fake image
 
     # Get debug information
     current_time = datetime.now()
