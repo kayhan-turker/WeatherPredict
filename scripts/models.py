@@ -50,30 +50,35 @@ class FakeImageGenerator(nn.Module):
         super(FakeImageGenerator, self).__init__()
         self.fc_labels = nn.Linear(num_labels, 256 * 8 * 16)
         self.fc_latent = nn.Linear(latent_dim, 256 * 8 * 16)
+
         self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
         self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
         self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1)
 
-        self.film1 = FiLMLayer(128, latent_dim // 2 + num_labels)
-        self.film2 = FiLMLayer(64, latent_dim // 2 + num_labels)
-        self.film3 = FiLMLayer(32, num_labels)
+        self.film1 = FiLMLayer(128, 128)  # Reduce FiLM input size
+        self.film2 = FiLMLayer(64, 64)
+        self.film3 = FiLMLayer(32, 32)
+
+        self.reduce_z = nn.Linear(256 * 8 * 16, 128)  # Reduce `z` size for FiLM
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
 
-        self.num_labels = num_labels
-        self.latent_dim = latent_dim
-
     def forward(self, latent, labels):
-        z_labels = self.fc_labels(labels).view(-1, 256, 8, 16)
-        z_latent = self.fc_latent(latent).view(-1, 256, 8, 16)
-        x = z_labels + z_latent
-        x = self.leaky_relu(self.film1(self.conv1(x), torch.cat((latent[:, :self.latent_dim // 2], labels), dim=1)))
-        x = self.leaky_relu(self.film2(self.conv2(x), torch.cat((latent[:, self.latent_dim // 2:], labels), dim=1)))
-        x = self.leaky_relu(self.film3(self.conv3(x), labels))
+        z_labels = self.fc_labels(labels)
+        z_latent = self.fc_latent(latent)
+        z = z_labels + z_latent
+
+        x = z.view(-1, 256, 8, 16)
+        z_film = self.reduce_z(z)
+
+        x = self.leaky_relu(self.film1(self.conv1(x), z_film))
+        x = self.leaky_relu(self.film2(self.conv2(x), z_film))
+        x = self.leaky_relu(self.film3(self.conv3(x), z_film))
         x = self.tanh(self.conv4(x))
         return x
+
 
 
 class LabelPredictor(nn.Module):
