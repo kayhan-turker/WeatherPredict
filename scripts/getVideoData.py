@@ -25,7 +25,7 @@ def get_weather_string():
     try:
         sun_alt = round(float(re.search(r"[-+]?\d*\.\d+|\d+", sun_soup.find("td", id="sunalt").text).group()), 1) \
             if sun_soup.find("td", id="sunalt") else "Not observed"
-        if sun_alt < -20:
+        if sun_alt < -2000:
             return None
         sun_dir = round(float(re.search(r"[-+]?\d*\.\d+|\d+", sun_soup.find("td", id="sunaz").text).group()), 1) \
             if sun_soup.find("td", id="sunaz") else "Not observed"

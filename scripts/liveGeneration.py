@@ -8,7 +8,7 @@ from models import *  # Import the generator class
 from settings import *  # Ensure the settings match
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "model_027.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_17_04_13_40_gen_epoch_141.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
@@ -99,7 +99,7 @@ for i in range(NUM_LABELS):
     frame.pack(fill="x", padx=5, pady=2)
     label = ttk.Label(frame, text=f"{LABEL_NAMES[i]}:")
     label.pack(side="left")
-    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal", command=lambda val, idx=i: update_latent(idx, val))
+    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal", command=lambda val, idx=i: update_label(idx, val))
     slider.pack(side="right", fill="x", expand=True)
 
 for i in range(LATENT_DIM):

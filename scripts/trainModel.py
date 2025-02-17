@@ -190,6 +190,7 @@ epochs = 150
 last_epoch_time = datetime.now()
 g_label_loss_factor = 4.0
 d_label_loss_factor = 1.5
+fake_repulsion = 0.01
 
 # Create directory to store outputs
 ts = datetime.now()
@@ -238,7 +239,7 @@ for epoch in range(epochs):
         loss_D_labels_real = criterion_labels(pred_real[:, :-1], labels)
         loss_D_labels_fake = criterion_labels(pred_fake[:, :-1], random_labels)
 
-        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * (loss_D_labels_real - loss_D_labels_fake)
+        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * (loss_D_labels_real + fake_repulsion / (loss_D_labels_fake + 1))
 
         optimizer_D.zero_grad()
         loss_D.backward()
