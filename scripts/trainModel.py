@@ -211,17 +211,27 @@ for epoch in range(epochs):
         # ----------------------
         # Train Generator
         # ----------------------
-        latent = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)  # Random noise
+        latent = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)
         linear_part = torch.rand(labels.shape[0], 2).to(device, non_blocking=True) * 2 - 1
         normal_part = torch.randn(labels.shape[0], labels.shape[1] - 2).to(device, non_blocking=True)
         random_labels = torch.cat([linear_part, normal_part], dim=1)
 
         fake_images = generator(latent, random_labels)
-        pred_fake = discriminator(fake_images)  # No manual modification
+        pred_fake = discriminator(fake_images)
 
+        # Loss from low FiLM std
+        film1_std_params = generator.film1.get_std_parameters()
+        film2_std_params = generator.film2.get_std_parameters()
+        film3_std_params = generator.film3.get_std_parameters()
+        std_params = torch.cat([film1_std_params, film2_std_params, film3_std_params])
+        target = torch.ones_like(std_params).detach()
+        std_loss_value = torch.mean((std_params - target) ** 2) * 0.1
+
+        # original loss
         loss_G_realism = criterion_realism(pred_fake[:, -1], torch.ones_like(pred_fake[:, -1], device=device))
         loss_G_labels = criterion_labels(pred_fake[:, :-1], random_labels)
-        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels
+
+        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels + std_loss_value
 
         optimizer_G.zero_grad()
         loss_G.backward()
@@ -239,7 +249,7 @@ for epoch in range(epochs):
         loss_D_labels_real = criterion_labels(pred_real[:, :-1], labels)
         loss_D_labels_fake = criterion_labels(pred_fake[:, :-1], random_labels)
 
-        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * (loss_D_labels_real + fake_repulsion / (loss_D_labels_fake + 1))
+        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * loss_D_labels_real
 
         optimizer_D.zero_grad()
         loss_D.backward()
@@ -268,9 +278,9 @@ for epoch in range(epochs):
     time_since_last = (current_time - last_epoch_time).total_seconds()
     datetime_next = current_time + (current_time - last_epoch_time)
 
-    film1_mean_params = generator.film1.get_mean_parameters()
-    film2_mean_params = generator.film2.get_mean_parameters()
-    film3_mean_params = generator.film3.get_mean_parameters()
+    film1_std_params = film1_std_params.tolist()
+    film2_std_params = film2_std_params.tolist()
+    film3_std_params = film3_std_params.tolist()
 
     # Print details
     print("\n" + "=" * 100)
@@ -283,10 +293,10 @@ for epoch in range(epochs):
     print(f"D Realism Score: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
           f"Label Score: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print("")
-    print(f"G FiLM Gamma Weights: γ1 = {film1_mean_params[0]:3f}, γ2 = {film2_mean_params[0]:3f}, γ3 = {film3_mean_params[0]:3f}")
-    print(f"G FiLM Gamma Biases: γ1 = {film1_mean_params[1]:3f}, γ2 = {film2_mean_params[1]:3f}, γ3 = {film3_mean_params[1]:3f}")
-    print(f"G FiLM Beta Weights: β1 = {film1_mean_params[2]:3f}, β2 = {film2_mean_params[2]:3f}, β3 = {film3_mean_params[2]:3f}")
-    print(f"G FiLM Beta Biases: β1 = {film1_mean_params[3]:3f}, β2 = {film2_mean_params[3]:3f}, β3 = {film3_mean_params[3]:3f}")
+    print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item().cpu().detach():3f}, γ2 = {film2_std_params[0]:3f}, γ3 = {film3_std_params[0]:3f}")
+    print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1]:3f}, γ2 = {film2_std_params[1]:3f}, γ3 = {film3_std_params[1]:3f}")
+    print(f"G FiLM Beta Weights Std: β1 = {film1_std_params[2]:3f}, β2 = {film2_std_params[2]:3f}, β3 = {film3_std_params[2]:3f}")
+    print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3]:3f}, β2 = {film2_std_params[3]:3f}, β3 = {film3_std_params[3]:3f}")
     print("")
     print("                                  ['Date', 'Time', 'Temp', 'Press', 'Dew', 'Hum', 'Dir', 'Alt']")
     print("Real Input Labels:               ", [f"{x:.1f}" for x in labels[0].cpu().numpy()])
