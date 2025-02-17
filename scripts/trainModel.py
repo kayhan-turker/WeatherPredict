@@ -278,9 +278,9 @@ for epoch in range(epochs):
     time_since_last = (current_time - last_epoch_time).total_seconds()
     datetime_next = current_time + (current_time - last_epoch_time)
 
-    film1_std_params = film1_std_params.tolist()
-    film2_std_params = film2_std_params.tolist()
-    film3_std_params = film3_std_params.tolist()
+    film1_std_params = generator.film1.get_std_parameters().cpu().detach()
+    film2_std_params = generator.film2.get_std_parameters().cpu().detach()
+    film3_std_params = generator.film3.get_std_parameters().cpu().detach()
 
     # Print details
     print("\n" + "=" * 100)
@@ -296,8 +296,7 @@ for epoch in range(epochs):
     print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item():.3f}, γ2 = {film2_std_params[0].item():.3f}, γ3 = {film3_std_params[0].item():.3f}")
     print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1].item():.3f}, γ2 = {film2_std_params[1].item():.3f}, γ3 = {film3_std_params[1].item():.3f}")
     print(f"G FiLM Beta Weights Std: β1 = {film1_std_params[2].item():.3f}, β2 = {film2_std_params[2].item():.3f}, β3 = {film3_std_params[2].item():.3f}")
-    print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3].item():.3f}, β2 = {film2_std_params[3].item():.3f}, β3 = {film3_std_params[3].item():.3f}")
-    print("")
+    print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3].item():.3f}, β2 = {film2_std_params[3].item():.3f}, β3 = {film3_std_params[3].item():.3f}")    print("")
     print("                                  ['Date', 'Time', 'Temp', 'Press', 'Dew', 'Hum', 'Dir', 'Alt']")
     print("Real Input Labels:               ", [f"{x:.1f}" for x in labels[0].cpu().numpy()])
     print("Predicted Labels (Real):         ", [f"{x:.1f}" for x in pred_real[0, :-1].detach().cpu().numpy()])
