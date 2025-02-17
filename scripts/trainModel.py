@@ -238,7 +238,7 @@ for epoch in range(epochs):
         loss_D_labels_real = criterion_labels(pred_real[:, :-1], labels)
         loss_D_labels_fake = criterion_labels(pred_fake[:, :-1], random_labels)
 
-        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * loss_D_labels_real
+        loss_D = loss_D_realism_real + loss_D_realism_fake + d_label_loss_factor * (loss_D_labels_real - loss_D_labels_fake)
 
         optimizer_D.zero_grad()
         loss_D.backward()
