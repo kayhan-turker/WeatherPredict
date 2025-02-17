@@ -47,7 +47,7 @@ class FiLMLayer(nn.Module):
 
 
 class FakeImageGenerator(nn.Module):
-    def __init__(self, latent_dim, num_labels, label_means, label_stds):
+    def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
         self.fc = nn.Linear(latent_dim + num_labels, 256 * 8 * 16)
         self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)

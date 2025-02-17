@@ -8,8 +8,8 @@ from settings import *  # Ensure the settings match
 
 # Load the trained generator
 LOAD_EPOCH = 10
-model_date = "2025_02_16_23_43_51"
-model_name = get_model_save_name(model_date, LOAD_EPOCH)
+model_date = "2025_02_17_00_08_12"
+model_name = "2025_02_17_00_08_12_gen_epoch_11.pth"  # get_model_save_name(model_date, LOAD_EPOCH)
 model_path = MODEL_SAVE_PATH + model_name
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
