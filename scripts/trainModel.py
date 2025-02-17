@@ -293,7 +293,7 @@ for epoch in range(epochs):
     print(f"D Realism Score: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
           f"Label Score: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print("")
-    print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item().cpu().detach():3f}, γ2 = {film2_std_params[0]:3f}, γ3 = {film3_std_params[0]:3f}")
+    print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0]:3f}, γ2 = {film2_std_params[0]:3f}, γ3 = {film3_std_params[0]:3f}")
     print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1]:3f}, γ2 = {film2_std_params[1]:3f}, γ3 = {film3_std_params[1]:3f}")
     print(f"G FiLM Beta Weights Std: β1 = {film1_std_params[2]:3f}, β2 = {film2_std_params[2]:3f}, β3 = {film3_std_params[2]:3f}")
     print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3]:3f}, β2 = {film2_std_params[3]:3f}, β3 = {film3_std_params[3]:3f}")
