@@ -65,11 +65,11 @@ class FakeImageGenerator(nn.Module):
     def forward(self, latent, labels):
         z = torch.cat((latent, labels), dim=1)
         x = self.fc(z).view(-1, 256, 8, 16)
-        x = self.leaky_relu(self.film1(self.conv1(x), latent + labels))
-        x = self.leaky_relu(self.film2(self.conv2(x), latent + labels))
-        x = self.leaky_relu(self.film3(self.conv3(x), latent + labels))
+        x = self.leaky_relu(self.film1(self.conv1(x), z))
+        x = self.leaky_relu(self.film2(self.conv2(x), z))
+        x = self.leaky_relu(self.film3(self.conv3(x), z))
         x = self.tanh(self.conv4(x))
-        return x  # Output is (batch_size, 3, 128, 256)
+        return x
 
 
 class LabelPredictor(nn.Module):
