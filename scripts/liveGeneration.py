@@ -1,12 +1,11 @@
-import torch
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.widgets import Slider
+import cv2
+import tkinter as tk
+from tkinter import ttk
 import os
 
 from models import *  # Import the generator class
 from settings import *  # Ensure the settings match
-
 
 # Load the trained generator
 model_path = MODEL_SAVE_PATH + "2025_02_17_00_08_12_gen_epoch_141.pth"
@@ -25,43 +24,74 @@ generator.eval()
 output_folder = GENERATION_OUTPUT_PATH + model_path[:19] + "/"
 os.makedirs(output_folder, exist_ok=True)
 
-
 # Initialize latent vector
 latent_vector = torch.randn(1, LATENT_DIM, device=device)
 label_vector = torch.randn(1, NUM_LABELS, device=device)
 
-# Create figure and axis
-fig, ax = plt.subplots()
-plt.subplots_adjust(bottom=0.25)
+
+# Function to update latent vector & regenerate image
+def update_latent(index, val):
+    global latent_vector
+    if 0 <= index < LATENT_DIM:
+        latent_vector[0, index] = float(val)
+        update_image()
 
 
-# Function to generate image
-def generate_image():
+# Function to generate and display an image
+def update_image():
     with torch.no_grad():
-        img = generator(latent_vector, label_vector).squeeze(0).permute(1, 2, 0).cpu().numpy()
-        img = (img - img.min()) / (img.max() - img.min())  # Normalize
-        return img
+        img_tensor = generator(latent_vector, label_vector).squeeze(0).permute(1, 2, 0).cpu().numpy()
+        img_tensor = ((img_tensor + 1) * 127.5).astype(np.uint8)  # Convert to 0-255 range
+        img_tensor = cv2.resize(img_tensor, (512, 256), interpolation=cv2.INTER_LINEAR)
+
+    cv2.imshow("Generated Image", img_tensor)
+    cv2.waitKey(1)
 
 
-# Display first image
-image_display = ax.imshow(generate_image())
+# Tkinter GUI
+root = tk.Tk()
+root.title("Latent Vector Controls")
+root.geometry("350x600")  # Adjust width if needed
+
+# Scrollable frame setup
+container = ttk.Frame(root)
+canvas = tk.Canvas(container)
+scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+scrollable_frame = ttk.Frame(canvas)
+
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# Pack everything
+container.pack(fill="both", expand=True)
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+# Configure scrolling
+scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 
 # Create sliders
-axcolor = 'lightgoldenrodyellow'
-slider_axes = [plt.axes([0.2, 0.0 + i * 0.03, 0.65, 0.02], facecolor=axcolor) for i in range(NUM_LABELS)]
-sliders = [Slider(ax, f'Z{i}', -1.0, 1.0, valinit=latent_vector[0, i].item()) for i, ax in enumerate(slider_axes)]
+for i in range(LATENT_DIM):
+    frame = ttk.Frame(scrollable_frame)
+    frame.pack(fill="x", padx=5, pady=2)
+
+    label = ttk.Label(frame, text=f"Z{i}:")
+    label.pack(side="left")
+
+    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal",
+                       command=lambda val, idx=i: update_latent(idx, val))
+    slider.pack(side="right", fill="x", expand=True)
 
 
-# Update function
-def update(val):
-    for i, slider in enumerate(sliders):
-        label_vector[0, i] = slider.val
-    image_display.set_data(generate_image())
-    fig.canvas.draw_idle()
+# Enable scrolling with mouse wheel
+def on_mousewheel(event):
+    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
 
-# Connect sliders to update function
-for slider in sliders:
-    slider.on_changed(update)
+root.bind_all("<MouseWheel>", on_mousewheel)
 
-plt.show()
+# Show initial image
+update_image()
+
+# Run Tkinter main loop
+root.mainloop()
