@@ -40,10 +40,10 @@ class FiLMLayer(nn.Module):
 
     def get_std_parameters(self):
         return torch.cat([
-            self.gamma.weight.std(keepdim=True),
-            self.gamma.bias.std(keepdim=True),
-            self.beta.weight.std(keepdim=True),
-            self.beta.bias.std(keepdim=True)
+            self.gamma.weight.std(dim=1, keepdim=True),
+            self.gamma.bias.std(keepdim=True).unsqueeze(0),
+            self.beta.weight.std(dim=1, keepdim=True),
+            self.beta.bias.std(keepdim=True).unsqueeze(0)
         ])
 
 
