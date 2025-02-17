@@ -98,7 +98,10 @@ def get_model_save_name(model_name, epoch):
 
 
 def get_image_output_name(labels, label_means, label_stds):
-    output_name = [x for x in labels[0].detach().cpu().numpy()]
+    if isinstance(labels, torch.Tensor):
+        output_name = [x for x in labels[0].detach().cpu().numpy()]
+    else:
+        output_name = [x for x in labels]
     non_shift_labels = len(output_name) - len(SELECTED_INDICES)
     for x in range(non_shift_labels, len(output_name)):
         output_name[x] = output_name[x] * label_stds[x - non_shift_labels] + label_means[x - non_shift_labels]
