@@ -8,7 +8,7 @@ from models import *  # Import the generator class
 from settings import *  # Ensure the settings match
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "2025_02_17_00_08_12_gen_epoch_141.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_17_02_08_12_gen_epoch_141.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
@@ -37,6 +37,13 @@ def update_latent(index, val):
         update_image()
 
 
+def update_label(index, val):
+    global latent_vector
+    if 0 <= index < NUM_LABELS:
+        label_vector[0, index] = float(val)
+        update_image()
+
+
 # Function to generate and display an image
 def update_image():
     with torch.no_grad():
@@ -49,49 +56,70 @@ def update_image():
 
 
 # Tkinter GUI
-root = tk.Tk()
-root.title("Latent Vector Controls")
-root.geometry("350x600")  # Adjust width if needed
+window_width, window_height = 150, 400
+vector_window = tk.Tk()
+vector_window.title("Vector Controls")
+vector_window.geometry(f"{window_width}x{window_height}")  # Adjust width if needed
+
 
 # Scrollable frame setup
-container = ttk.Frame(root)
-canvas = tk.Canvas(container)
-scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
-scrollable_frame = ttk.Frame(canvas)
+main_frame = ttk.Frame(vector_window)
+main_frame.pack(fill="both", expand=True)
+main_frame.grid_rowconfigure(0, weight=2)
+main_frame.grid_rowconfigure(1, weight=1)
+main_frame.grid_columnconfigure(0, weight=1)
 
-canvas.configure(yscrollcommand=scrollbar.set)
+label_scrolling_canvas = tk.Canvas(main_frame, bg="#DDEEDD")
+label_scrolling_canvas.grid(row=0, column=0, sticky="nsew")
+label_scrollbar = ttk.Scrollbar(label_scrolling_canvas, orient="vertical", command=label_scrolling_canvas.yview)
+label_scrolling_canvas.configure(yscrollcommand=label_scrollbar.set)
+
+latent_scrolling_canvas = tk.Canvas(main_frame, bg="#DDDDEE")
+latent_scrolling_canvas.grid(row=1, column=0, sticky="nsew")
+latent_scrollbar = ttk.Scrollbar(latent_scrolling_canvas, orient="vertical", command=latent_scrolling_canvas.yview)
+latent_scrolling_canvas.configure(yscrollcommand=latent_scrollbar.set)
+
+label_slider_frame = ttk.Frame(label_scrolling_canvas)
+latent_slider_frame = ttk.Frame(latent_scrolling_canvas)
 
 # Pack everything
-container.pack(fill="both", expand=True)
-canvas.pack(side="left", fill="both", expand=True)
-scrollbar.pack(side="right", fill="y")
+main_frame.pack(fill="both", expand=True)
+label_scrollbar.pack(side="right", fill="y")
+latent_scrollbar.pack(side="right", fill="y")
 
 # Configure scrolling
-scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+label_scrolling_canvas.bind("<Configure>", lambda e: label_scrolling_canvas.configure(scrollregion=label_scrolling_canvas.bbox("all")))
+latent_scrolling_canvas.bind("<Configure>", lambda e: latent_scrolling_canvas.configure(scrollregion=latent_scrolling_canvas.bbox("all")))
+window_label = label_scrolling_canvas.create_window((0, 0), window=label_slider_frame, anchor="nw")
+window_latent = latent_scrolling_canvas.create_window((1, 0), window=latent_slider_frame, anchor="nw")
 
 # Create sliders
-for i in range(LATENT_DIM):
-    frame = ttk.Frame(scrollable_frame)
+for i in range(NUM_LABELS):
+    frame = ttk.Frame(label_slider_frame)
     frame.pack(fill="x", padx=5, pady=2)
+    label = ttk.Label(frame, text=f"{LABEL_NAMES[i]}:")
+    label.pack(side="left")
+    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal", command=lambda val, idx=i: update_latent(idx, val))
+    slider.pack(side="right", fill="x", expand=True)
 
+for i in range(LATENT_DIM):
+    frame = ttk.Frame(latent_slider_frame)
+    frame.pack(fill="x", padx=5, pady=2)
     label = ttk.Label(frame, text=f"Z{i}:")
     label.pack(side="left")
-
-    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal",
-                       command=lambda val, idx=i: update_latent(idx, val))
+    slider = ttk.Scale(frame, from_=-1, to=1, orient="horizontal", command=lambda val, idx=i: update_latent(idx, val))
     slider.pack(side="right", fill="x", expand=True)
 
 
 # Enable scrolling with mouse wheel
 def on_mousewheel(event):
-    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+    latent_scrolling_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
 
-root.bind_all("<MouseWheel>", on_mousewheel)
+vector_window.bind_all("<MouseWheel>", on_mousewheel)
 
 # Show initial image
 update_image()
 
 # Run Tkinter main loop
-root.mainloop()
+vector_window.mainloop()
