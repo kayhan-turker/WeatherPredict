@@ -190,7 +190,6 @@ epochs = 150
 last_epoch_time = datetime.now()
 g_label_loss_factor = 4.0
 d_label_loss_factor = 1.5
-fake_repulsion = 0.2
 
 # Create directory to store outputs
 ts = datetime.now()
@@ -219,19 +218,10 @@ for epoch in range(epochs):
         fake_images = generator(latent, random_labels)
         pred_fake = discriminator(fake_images)
 
-        # Loss from low FiLM std
-        film1_std_params = generator.film1.get_std_parameters()
-        film2_std_params = generator.film2.get_std_parameters()
-        film3_std_params = generator.film3.get_std_parameters()
-        std_params = torch.cat([film1_std_params, film2_std_params, film3_std_params])
-        target = torch.ones_like(std_params).detach()
-        std_loss_value = torch.mean((std_params - target) ** 2) * 0.1
-
-        # original loss
         loss_G_realism = criterion_realism(pred_fake[:, -1], torch.ones_like(pred_fake[:, -1], device=device))
         loss_G_labels = criterion_labels(pred_fake[:, :-1], random_labels)
 
-        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels + std_loss_value
+        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels
 
         optimizer_G.zero_grad()
         loss_G.backward()
