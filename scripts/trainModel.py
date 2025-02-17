@@ -190,7 +190,7 @@ epochs = 150
 last_epoch_time = datetime.now()
 g_label_loss_factor = 4.0
 d_label_loss_factor = 1.5
-fake_repulsion = 1.0
+fake_repulsion = 0.2
 
 # Create directory to store outputs
 ts = datetime.now()
