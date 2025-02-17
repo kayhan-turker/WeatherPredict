@@ -1,47 +1,47 @@
-fdf3f92 2025-02-16 fix paths in scripts
-8180d84 2025-02-16 reorganize folders
-6176708 2025-02-16 model_026: model_024 + GLR=0.0002, DLR=0.00005
-49a68b2 2025-02-16 model_025: model_024 + GLR=0.00005, DLR=0.0002
-63e3029 2025-02-16 model_024: model_023 - remove discriminator using fake label loss
-f5ad319 2025-02-16 model_023: fix CUDA usage
-ba2f9f3 2025-02-16 model_023: fix CUDA usage
-b22f154 2025-02-16 model_023: allow cudas if available
-06c6250 2025-02-16 model_023: fix printing
-0133484 2025-02-16 model_023: initialize parameters for film
-f8d25d5 2025-02-16 model_022: match learning rates (0.0001)
-1b68141 2025-02-16 model_021: replace batch norm with film layers
-6b39419 2025-02-16 model_020: model_019 + label weight = (g = 4, d = 1.5)
-d815092 2025-02-16 model_019: model_010 + dis now checks fake label loss
-e5e3dd5 2025-02-15 model_018: change manual modifications to label loss factor with abs difference
-8d81ea0 2025-02-15 model_017: fix epoch outputs
-cf4343c 2025-02-15 model_017: discriminator fake loss includes labels
-84b9617 2025-02-15 model_016: fix detachment (add discriminator rerun)
-8a7b1ef 2025-02-15 model_016: model_010 + keep realism and labels into one loss array
-1d4ba41 2025-02-15 model_015: model_010 + label loss weight = NUM_LABELS
-d03e21f 2025-02-14 model_010: add weight for generator label loss (2.0). readd some redundant lines
-b7598fa 2025-02-14 model_010: add weight for generator label loss (2.0). remove redundant discriminator calc
-e526ab0 2025-02-14 add progress bar
-4a56a5d 2025-02-14 add elapsed time check and prints
-b2396e8 2025-02-14 model_009: gen.fc.out = 256 * 8 * 16 (from 512 * 8 * 16)
-9e2170f 2025-02-14 model_008: normal distribution for real data labels. rand labels for generator match
-eb4a0db 2025-02-14 day of year and time of day -1 to 1
-466fef0 2025-02-14 improve epoch outputs
-2ebfd9b 2025-02-13 model_007: model_006 + back to tanh + fix image saving
-16fb891 2025-02-13 model_006: model_005 + weight initialization
-194ffd7 2025-02-13 model_005: model_004 + leakyRelu instead of relu
-5049c5f 2025-02-13 model_004 - model_001 + sigmoid instead of tanh
-653a455 2025-02-13 model_003 - model_001 + leakyReLU instead of ReLU
-be44b30 2025-02-13 model_002 - model_001 without tanh
-ebb12b9 2025-02-13 model_002
-5ada512 2025-02-13 model_001
-a8651c1 2025-02-13 working model
-d0f168b 2025-02-13 update gitignore
-3f392de 2025-02-13 add gitexclude
-bfec4b9 2025-02-13 add gitignore
-a0384be 2025-02-11 last working
-4f545e5 2025-02-11 fixes
-d604996 2025-02-11 simple CNN network
-1f6302d 2025-02-11 fix write format
-6fa07d7 2025-02-11 remove sun alt check
-aef5103 2025-02-11 commit
-6b18a46 2025-02-11 init git
+fdf3f92 2025-02-16 17:21:01 | fix paths in scripts
+8180d84 2025-02-16 17:04:35 | reorganize folders
+6176708 2025-02-16 16:40:50 | model_026: model_024 + GLR=0.0002, DLR=0.00005
+49a68b2 2025-02-16 16:38:58 | model_025: model_024 + GLR=0.00005, DLR=0.0002
+63e3029 2025-02-16 16:27:25 | model_024: model_023 - remove discriminator using fake label loss
+f5ad319 2025-02-16 16:16:02 | model_023: fix CUDA usage
+ba2f9f3 2025-02-16 15:55:15 | model_023: fix CUDA usage
+b22f154 2025-02-16 15:10:56 | model_023: allow cudas if available
+06c6250 2025-02-16 11:38:58 | model_023: fix printing
+0133484 2025-02-16 11:11:09 | model_023: initialize parameters for film
+f8d25d5 2025-02-16 10:34:48 | model_022: match learning rates (0.0001)
+1b68141 2025-02-16 09:24:27 | model_021: replace batch norm with film layers
+6b39419 2025-02-16 08:54:08 | model_020: model_019 + label weight = (g = 4, d = 1.5)
+d815092 2025-02-16 00:08:17 | model_019: model_010 + dis now checks fake label loss
+e5e3dd5 2025-02-15 23:33:41 | model_018: change manual modifications to label loss factor with abs difference
+8d81ea0 2025-02-15 21:54:50 | model_017: fix epoch outputs
+cf4343c 2025-02-15 21:05:55 | model_017: discriminator fake loss includes labels
+84b9617 2025-02-15 16:51:56 | model_016: fix detachment (add discriminator rerun)
+8a7b1ef 2025-02-15 10:38:46 | model_016: model_010 + keep realism and labels into one loss array
+1d4ba41 2025-02-15 10:23:36 | model_015: model_010 + label loss weight = NUM_LABELS
+d03e21f 2025-02-14 18:18:11 | model_010: add weight for generator label loss (2.0). readd some redundant lines
+b7598fa 2025-02-14 18:00:13 | model_010: add weight for generator label loss (2.0). remove redundant discriminator calc
+e526ab0 2025-02-14 10:16:48 | add progress bar
+4a56a5d 2025-02-14 09:22:58 | add elapsed time check and prints
+b2396e8 2025-02-14 08:22:52 | model_009: gen.fc.out = 256 * 8 * 16 (from 512 * 8 * 16)
+9e2170f 2025-02-14 01:06:07 | model_008: normal distribution for real data labels. rand labels for generator match
+eb4a0db 2025-02-14 00:56:36 | day of year and time of day -1 to 1
+466fef0 2025-02-14 00:35:34 | improve epoch outputs
+2ebfd9b 2025-02-13 23:13:01 | model_007: model_006 + back to tanh + fix image saving
+16fb891 2025-02-13 23:01:35 | model_006: model_005 + weight initialization
+194ffd7 2025-02-13 22:39:00 | model_005: model_004 + leakyRelu instead of relu
+5049c5f 2025-02-13 21:34:50 | model_004 - model_001 + sigmoid instead of tanh
+653a455 2025-02-13 21:27:30 | model_003 - model_001 + leakyReLU instead of ReLU
+be44b30 2025-02-13 21:26:03 | model_002 - model_001 without tanh
+ebb12b9 2025-02-13 20:54:27 | model_002
+5ada512 2025-02-13 20:53:47 | model_001
+a8651c1 2025-02-13 19:27:17 | working model
+d0f168b 2025-02-13 19:25:48 | update gitignore
+3f392de 2025-02-13 19:25:05 | add gitexclude
+bfec4b9 2025-02-13 19:23:46 | add gitignore
+a0384be 2025-02-11 23:35:29 | last working
+4f545e5 2025-02-11 23:33:35 | fixes
+d604996 2025-02-11 23:16:47 | simple CNN network
+1f6302d 2025-02-11 20:58:42 | fix write format
+6fa07d7 2025-02-11 20:12:42 | remove sun alt check
+aef5103 2025-02-11 20:12:29 | commit
+6b18a46 2025-02-11 19:00:18 | init git
