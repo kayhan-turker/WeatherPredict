@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.init as init
 
 from settings import *
 
@@ -54,19 +53,19 @@ class FiLMLayer(nn.Module):
 class FakeImageGenerator(nn.Module):
     def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
-        self.fc_labels = nn.Linear(num_labels, 256 * 8 * 16)
-        self.fc_latent = nn.Linear(latent_dim, 256 * 8 * 16)
+        self.fc_labels = nn.Linear(num_labels, 64 * 8 * 16)
+        self.fc_latent = nn.Linear(latent_dim, 64 * 8 * 16)
 
-        self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
-        self.conv2 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
-        self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
-        self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1)
+        self.conv1 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
+        self.conv2 = nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1)
+        self.conv3 = nn.ConvTranspose2d(16, 8, kernel_size=4, stride=2, padding=1)
+        self.conv4 = nn.ConvTranspose2d(8, 3, kernel_size=4, stride=2, padding=1)
 
-        self.film1 = FiLMLayer(128, 128)
-        self.film2 = FiLMLayer(64, 128)
-        self.film3 = FiLMLayer(32, 128)
+        self.film1 = FiLMLayer(32, 128)
+        self.film2 = FiLMLayer(16, 128)
+        self.film3 = FiLMLayer(8, 128)
 
-        self.fc_film = nn.Linear(256 * 8 * 16, 128)
+        self.fc_film = nn.Linear(64 * 8 * 16, 128)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -76,7 +75,7 @@ class FakeImageGenerator(nn.Module):
         z_latent = self.fc_latent(latent)
         z = z_labels + z_latent
 
-        x = z.view(-1, 256, 8, 16)
+        x = z.view(-1, 64, 8, 16)
         z_film = self.fc_film(z)
         x = self.leaky_relu(self.film1(self.conv1(x), z_film))
         x = self.leaky_relu(self.film2(self.conv2(x), z_film))
