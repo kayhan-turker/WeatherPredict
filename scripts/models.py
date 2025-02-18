@@ -77,13 +77,13 @@ class FakeImageGenerator(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, latent, labels):
-        z_labels = self.fc_labels(labels)
-        z_latent = self.fc_latent(latent)
-        z = z_labels + z_latent
+        x_labels = self.fc_labels(labels)
+        x_latent = self.fc_latent(latent)
+        x = x_labels + x_latent
 
-        x = z.view(-1, 64, 8, 16)
+        x = x.view(-1, 64, 8, 16)
         x = self.upsample(x)
-        z_film = self.fc_z_film1(torch.cat((z_labels, z_latent), dim=1))
+        z_film = self.fc_z_film1(torch.cat((latent, labels), dim=1))
         x = self.leaky_relu(self.film1(self.norm1(self.conv1(x)), z_film))
 
         x = self.upsample(x)
