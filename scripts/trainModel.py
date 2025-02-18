@@ -1,14 +1,12 @@
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
-from PIL import Image
 import os
-import numpy as np
 import torch.backends.cudnn as cudnn
 
 from models import *
-from settings import *
 from config import *
+from helper_functions.trainingResults import *
 
 # ====================================
 # 0. Preparation
@@ -185,7 +183,7 @@ print("\n" + "=" * 100)
 print("9. Begin Training")
 print("-" * 100)
 
-epochs = 150
+num_epochs = 150
 last_epoch_time = datetime.now()
 g_label_loss_factor = 4.0
 d_label_loss_factor = 1.5
@@ -197,7 +195,7 @@ MODEL_NAME = ts
 output_folder = GENERATION_OUTPUT_PATH + "training/" + MODEL_NAME
 os.makedirs(output_folder, exist_ok=True)
 
-for epoch in range(epochs):
+for epoch in range(num_epochs):
     batch_num = 0
     for images, labels in trainloader:
         batch_num += 1
@@ -246,61 +244,12 @@ for epoch in range(epochs):
 
     # Save model every 10 epochs
     if epoch % 10 == 0:
-        save_path = MODEL_SAVE_PATH + get_model_save_name(MODEL_NAME, epoch)
-        torch.save({
-            "state_dict": generator.state_dict(),
-            "label_means": label_means,
-            "label_stds": label_stds,
-            "batch_norm_stats": {
-                name: {"running_mean": m.running_mean, "running_var": m.running_var}
-                for name, m in generator.named_modules() if isinstance(m, nn.BatchNorm2d)
-            }
-        }, save_path)
-        print("\n" + "=" * 100)
-        print(f"Saved Generator Model: {save_path}")
-        print("\n" + "=" * 100)
+        generator.save_model(get_model_save_name(MODEL_NAME, epoch), label_means, label_stds)
 
+    save_generator_image(fake_images[0], output_folder, epoch, fake_labels, label_means, label_stds)
 
-    output_name = get_image_output_name(fake_labels, label_means, label_stds)
-
-    fake_image_np = ((fake_images[0].detach().cpu().numpy().transpose(1, 2, 0) + 1) * 127.5).astype(np.uint8)
-    fake_image_pil = Image.fromarray(fake_image_np)
-    fake_image_pil.save(f"{output_folder}/E{(epoch + 1):03}_{output_name}.png")  # Save fake image
-
-    # Get debug information
-    current_time = datetime.now()
-    time_since_last = (current_time - last_epoch_time).total_seconds()
-    datetime_next = current_time + (current_time - last_epoch_time)
-
-    film1_std_params = generator.film1.get_std_parameters().cpu().detach()
-    film2_std_params = generator.film2.get_std_parameters().cpu().detach()
-    film3_std_params = generator.film3.get_std_parameters().cpu().detach()
-
-    # Print details
-    print("\n" + "=" * 100)
-    print(f"Time: {str(current_time)[:19]} | Epoch Time (s): {time_since_last:.2f} | Next Epoch: {str(datetime_next)[:19]}")
-    print("-" * 100)
-    print(f"Epoch {epoch + 1}/{epochs}, Loss_G: {loss_G.item():.3f}, Loss_D: {loss_D.item():.3f}")
-    print("")
-    print(f"G Realism Loss: {torch.abs(torch.ones_like(pred_fake[:, -1]) - pred_fake[:, -1]).mean().item():.3f} "
-          f"Label Loss: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
-    print(f"D Realism Loss: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
-          f"Label Loss: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
-    print("")
-    print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item():.3f}, γ2 = {film2_std_params[0].item():.3f}, γ3 = {film3_std_params[0].item():.3f}")
-    print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1].item():.3f}, γ2 = {film2_std_params[1].item():.3f}, γ3 = {film3_std_params[1].item():.3f}")
-    print(f"G FiLM Beta Weights Std: β1 = {film1_std_params[2].item():.3f}, β2 = {film2_std_params[2].item():.3f}, β3 = {film3_std_params[2].item():.3f}")
-    print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3].item():.3f}, β2 = {film2_std_params[3].item():.3f}, β3 = {film3_std_params[3].item():.3f}")
-    print("")
-    print("                                  ['Date', 'Time', 'Temp', 'Press', 'Dew', 'Hum', 'Dir', 'Alt']")
-    print("Real Input Labels:               ", [f"{x:.1f}" for x in labels[0].cpu().numpy()])
-    print("Predicted Labels (Real):         ", [f"{x:.1f}" for x in pred_real[0, :-1].detach().cpu().numpy()])
-    print("Random Labels (Generator Input): ", [f"{x:.1f}" for x in fake_labels[0].cpu().numpy()])
-    print("Predicted Labels (Fake):         ", [f"{x:.1f}" for x in pred_fake[0, :-1].detach().cpu().numpy()])
-    print(f"Real Check (Real): {pred_real[0, -1].item():.1f} | (Fake): {pred_fake[0, -1].item():.1f}")
-    print("-" * 100)
-    print("")
-
+    refresh_results(generator, epoch, num_epochs, last_epoch_time,
+                    loss_G, loss_D, labels, pred_real, fake_labels, pred_fake)
     last_epoch_time = datetime.now()
 
 print("Training complete!")

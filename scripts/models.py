@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 
 from settings import *
+from config import *
 
 
 def weights_init(m):
@@ -72,6 +73,21 @@ class FakeImageGenerator(nn.Module):
         x = self.tanh(self.conv4(x))
         return x
 
+    def save_model(self, model_save_name, label_means, label_stds):
+        save_path = MODEL_SAVE_PATH + model_save_name
+        torch.save({
+            "state_dict": self.state_dict(),
+            "label_means": label_means,
+            "label_stds": label_stds,
+            "batch_norm_stats": {
+                name: {"running_mean": m.running_mean, "running_var": m.running_var}
+                for name, m in self.named_modules() if isinstance(m, nn.BatchNorm2d)
+            }
+        }, save_path)
+        print("\n" + "=" * 100)
+        print(f"Saved Generator Model: {save_path}")
+        print("\n" + "=" * 100)
+
 
 class LabelPredictor(nn.Module):
     def __init__(self, output_size):
@@ -102,15 +118,3 @@ class LabelPredictor(nn.Module):
 def get_model_save_name(model_name, epoch):
     return f"{model_name}_gen_epoch_{epoch + 1}.pth"
 
-
-def get_image_output_name(labels, label_means, label_stds):
-    if isinstance(labels, torch.Tensor):
-        output_name = [x for x in labels[0].detach().cpu().numpy()]
-    else:
-        output_name = [x for x in labels]
-    non_shift_labels = len(output_name) - len(SELECTED_INDICES)
-    for x in range(non_shift_labels, len(output_name)):
-        output_name[x] = output_name[x] * label_stds[x - non_shift_labels] + label_means[x - non_shift_labels]
-    output_name[0] = output_name[0] / 2 + 0.5
-    output_name[1] = output_name[1] / 2 + 0.5
-    return "_".join(f"{output_name[x]:.2f}" if x < 2 else f"{int(round(output_name[x]))}" for x in range(len(output_name)))

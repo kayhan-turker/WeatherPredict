@@ -4,19 +4,19 @@ import tkinter as tk
 from tkinter import ttk
 import os
 
-from models import *  # Import the generator class
-from settings import *  # Ensure the settings match
-from config import *  # Ensure the settings match
+from models import *
+from settings import *
+from config import *
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "2025_02_18_21_59_57_gen_epoch_81.pth"
+model_path = MODEL_SAVE_PATH + "model_034a.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
 generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
-checkpoint = torch.load(model_path, map_location=device)
+checkpoint = torch.load(model_path, map_location=device, weights_only=False)
 generator.load_state_dict(checkpoint["state_dict"])
 generator.label_means = checkpoint["label_means"]
 generator.label_stds = checkpoint["label_stds"]
