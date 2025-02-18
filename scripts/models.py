@@ -61,9 +61,9 @@ class FakeImageGenerator(nn.Module):
 
         self.upsample = nn.Upsample(scale_factor=2)
 
-        self.norm1 = nn.BatchNorm2d(32)
-        self.norm2 = nn.BatchNorm2d(16)
-        self.norm3 = nn.BatchNorm2d(8)
+        self.norm1 = nn.BatchNorm2d(128)
+        self.norm2 = nn.BatchNorm2d(64)
+        self.norm3 = nn.BatchNorm2d(32)
 
         self.film1 = FiLMLayer(128, num_labels)
         self.film2 = FiLMLayer(64, num_labels)
