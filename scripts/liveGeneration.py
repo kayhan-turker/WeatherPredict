@@ -9,7 +9,7 @@ from settings import *  # Ensure the settings match
 from config import *  # Ensure the settings match
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "model_032m.pth"
+model_path = MODEL_SAVE_PATH + "model_032p.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
