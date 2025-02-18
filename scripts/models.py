@@ -65,13 +65,9 @@ class FakeImageGenerator(nn.Module):
         self.norm2 = nn.BatchNorm2d(16)
         self.norm3 = nn.BatchNorm2d(8)
 
-        self.fc_z_film1 = nn.Linear(num_labels, 128)
-        self.fc_z_film2 = nn.Linear(128, 128)
-        self.fc_z_film3 = nn.Linear(128, 128)
-
-        self.film1 = FiLMLayer(32, 128)
-        self.film2 = FiLMLayer(16, 128)
-        self.film3 = FiLMLayer(8, 128)
+        self.film1 = FiLMLayer(32, num_labels)
+        self.film2 = FiLMLayer(16, num_labels)
+        self.film3 = FiLMLayer(8, num_labels)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -83,16 +79,13 @@ class FakeImageGenerator(nn.Module):
         x = x.view(-1, 64, 8, 16)
 
         x = self.upsample(x)
-        z = self.fc_z_film1(labels)
-        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), z)))
+        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
 
         x = self.upsample(x)
-        z = self.fc_z_film2(z)
-        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), z)))
+        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels)))
 
         x = self.upsample(x)
-        z = self.fc_z_film3(z)
-        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), z)))
+        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels)))
 
         x = self.upsample(x)
         x = self.tanh(self.conv4(x))
