@@ -7,10 +7,7 @@ from settings import *
 
 def weights_init(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
-        if isinstance(m, nn.ConvTranspose2d) and isinstance(m, nn.Linear):
-            init.kaiming_normal_(m.weight, a=0.2, mode='fan_in', nonlinearity='leaky_relu')  # Best for LeakyReLU
-        else:
-            init.xavier_uniform_(m.weight)  # Best for Tanh/Sigmoid
+        init.xavier_uniform_(m.weight)
         if m.bias is not None:
             init.constant_(m.bias, 0)
     elif isinstance(m, nn.BatchNorm2d):
