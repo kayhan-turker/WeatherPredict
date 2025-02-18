@@ -42,7 +42,7 @@ def get_weather_string():
         sun_dir = sun_soup.find("td", id="sunaz")
         sun_alt = round(float(re.search(r"[-+]?\d*\.\d+|\d+", sun_alt.text).group()), 1) if sun_alt else "Not observed"
         sun_dir = round(float(re.search(r"[-+]?\d*\.\d+|\d+", sun_dir.text).group()), 1) if sun_dir else "Not observed"
-        if sun_alt < -2000:
+        if sun_alt < -20:
             return None
     except AttributeError:
         print("[ERROR] Sun data missing.")
