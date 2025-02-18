@@ -61,9 +61,9 @@ class FakeImageGenerator(nn.Module):
 
         self.upsample = nn.Upsample(scale_factor=2)
 
-        # self.norm1 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
-        # self.norm2 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
-        # self.norm3 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
+        self.norm1 = nn.LayerNorm([32, 16, 32], elementwise_affine=False)
+        self.norm2 = nn.LayerNorm([16, 32, 64], elementwise_affine=False)
+        self.norm3 = nn.LayerNorm([8, 64, 128], elementwise_affine=False)
 
         self.fc_film = nn.Linear(64 * 8 * 16, 128)
 
@@ -82,11 +82,11 @@ class FakeImageGenerator(nn.Module):
         x = z.view(-1, 64, 8, 16)
         z_film = self.fc_film(z)
         x = self.upsample(x)
-        x = self.leaky_relu(self.film1(self.conv1(x), z_film))
+        x = self.leaky_relu(self.film1(self.norm1(self.conv1(x)), z_film))
         x = self.upsample(x)
-        x = self.leaky_relu(self.film2(self.conv2(x), z_film))
+        x = self.leaky_relu(self.film2(self.norm2(self.conv2(x)), z_film))
         x = self.upsample(x)
-        x = self.leaky_relu(self.film3(self.conv3(x), z_film))
+        x = self.leaky_relu(self.film3(self.norm3(self.conv3(x)), z_film))
         x = self.upsample(x)
         x = self.tanh(self.conv4(x))
         return x
