@@ -51,13 +51,13 @@ class FiLMLayer(nn.Module):
 class FakeImageGenerator(nn.Module):
     def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
-        self.fc_labels = nn.Linear(num_labels, 64 * 8 * 16)
-        self.fc_latent = nn.Linear(latent_dim, 64 * 8 * 16)
+        self.fc_labels = nn.Linear(num_labels, 256 * 8 * 16)
+        self.fc_latent = nn.Linear(latent_dim, 256 * 8 * 16)
 
-        self.conv1 = nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, padding=1)
-        self.conv4 = nn.Conv2d(8, 3, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1)
 
         self.upsample = nn.Upsample(scale_factor=2)
 
@@ -65,9 +65,9 @@ class FakeImageGenerator(nn.Module):
         self.norm2 = nn.BatchNorm2d(16)
         self.norm3 = nn.BatchNorm2d(8)
 
-        self.film1 = FiLMLayer(32, num_labels)
-        self.film2 = FiLMLayer(16, num_labels)
-        self.film3 = FiLMLayer(8, num_labels)
+        self.film1 = FiLMLayer(128, num_labels)
+        self.film2 = FiLMLayer(64, num_labels)
+        self.film3 = FiLMLayer(32, num_labels)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -75,8 +75,7 @@ class FakeImageGenerator(nn.Module):
     def forward(self, latent, labels):
         x_labels = self.fc_labels(labels)
         x_latent = self.fc_latent(latent)
-        x = x_labels + x_latent
-        x = x.view(-1, 64, 8, 16)
+        x = (x_labels + x_latent).view(-1, 256, 8, 16)
 
         x = self.upsample(x)
         x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
