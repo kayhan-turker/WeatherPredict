@@ -65,7 +65,7 @@ class FakeImageGenerator(nn.Module):
         self.norm2 = nn.LayerNorm([16, 32, 64], elementwise_affine=False)
         self.norm3 = nn.LayerNorm([8, 64, 128], elementwise_affine=False)
 
-        self.fc_z_film1 = nn.Linear(latent_dim + num_labels, 128)
+        self.fc_z_film1 = nn.Linear(num_labels, 128)
         self.fc_z_film2 = nn.Linear(128, 128)
         self.fc_z_film3 = nn.Linear(128, 128)
 
@@ -83,7 +83,7 @@ class FakeImageGenerator(nn.Module):
 
         x = x.view(-1, 64, 8, 16)
         x = self.upsample(x)
-        z_film = self.fc_z_film1(torch.cat((latent, labels), dim=1))
+        z_film = self.fc_z_film1(torch.cat(labels, dim=1))
         x = self.leaky_relu(self.film1(self.norm1(self.conv1(x)), z_film))
 
         x = self.upsample(x)
