@@ -55,19 +55,16 @@ class FakeImageGenerator(nn.Module):
         self.film2 = FiLMLayer(64, num_labels)
         self.film3 = FiLMLayer(32, num_labels)
 
-        self.norm1 = nn.LayerNorm([128, 16, 32], elementwise_affine=False)
-        self.norm2 = nn.LayerNorm([64, 32, 64], elementwise_affine=False)
-        self.norm3 = nn.LayerNorm([32, 64, 128], elementwise_affine=False)
-
         self.leaky_relu = nn.LeakyReLU()
+        self.dropout = nn.Dropout(0.2)
         self.tanh = nn.Tanh()
 
     def forward(self, latent, labels):
         z = torch.cat((latent, labels), dim=1)
         x = self.fc(z).view(-1, 256, 8, 16)
-        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
-        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels)))
-        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels)))
+        x = self.dropout(self.leaky_relu(self.film1(self.conv1(x), labels)))
+        x = self.dropout(self.leaky_relu(self.film2(self.conv2(x), labels)))
+        x = self.dropout(self.leaky_relu(self.film3(self.conv3(x), labels)))
         x = self.tanh(self.conv4(x))
         return x
 
@@ -79,10 +76,6 @@ class LabelPredictor(nn.Module):
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
 
-        self.norm1 = nn.LayerNorm([16, 128, 256], elementwise_affine=False)
-        self.norm2 = nn.LayerNorm([32, 64, 128], elementwise_affine=False)
-        self.norm3 = nn.LayerNorm([64, 32, 64], elementwise_affine=False)
-
         self.fc1 = nn.Linear(64 * 16 * 32, 128)
         self.fc2 = nn.Linear(128, output_size + 1)  # Updated to match new label size
 
@@ -90,9 +83,9 @@ class LabelPredictor(nn.Module):
         self.leaky_relu = nn.LeakyReLU()
 
     def forward(self, x):
-        x = self.pool(self.leaky_relu(self.norm1(self.conv1(x))))
-        x = self.pool(self.leaky_relu(self.norm2(self.conv2(x))))
-        x = self.pool(self.leaky_relu(self.norm3(self.conv3(x))))
+        x = self.pool(self.leaky_relu(self.conv1(x)))
+        x = self.pool(self.leaky_relu(self.conv2(x)))
+        x = self.pool(self.leaky_relu(self.conv3(x)))
         x = x.view(x.size(0), -1)
         x = self.leaky_relu(self.fc1(x))
         return self.fc2(x)
