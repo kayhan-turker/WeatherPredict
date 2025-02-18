@@ -6,6 +6,7 @@ import os
 
 from models import *  # Import the generator class
 from settings import *  # Ensure the settings match
+from config import *  # Ensure the settings match
 
 # Load the trained generator
 model_path = MODEL_SAVE_PATH + "2025_02_17_06_20_16_gen_epoch_91.pth"
