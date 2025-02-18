@@ -26,7 +26,7 @@ def get_soup(url):
 
 def abbreviate(text):
     """Convert multi-word text into abbreviations while keeping numeric values unchanged."""
-    if not text or text == "Not observed":
+    if not text:
         return text  # Preserve missing values
     return "".join(w[0].upper() for w in text.split()) if not text.replace('.', '', 1).replace('-', '', 1).isdigit() else text
 
