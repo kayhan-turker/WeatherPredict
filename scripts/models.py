@@ -6,13 +6,14 @@ from settings import *
 
 
 def weights_init(m):
-    if isinstance(m, (nn.ConvTranspose2d, nn.Linear)):
-        init.kaiming_normal_(m.weight, a=0.2, mode='fan_in', nonlinearity='leaky_relu')  # Best for LeakyReLU
-    else:
-        init.xavier_uniform_(m.weight)  # Best for Tanh/Sigmoid
-    if m.bias is not None:
+    if hasattr(m, 'weight') and m.weight is not None:
+        if isinstance(m, (nn.ConvTranspose2d, nn.Linear)):
+            init.kaiming_normal_(m.weight, a=0.2, mode='fan_in', nonlinearity='leaky_relu')  # Best for LeakyReLU
+        else:
+            init.xavier_uniform_(m.weight)  # Best for Tanh/Sigmoid
+    if hasattr(m, 'bias') and m.bias is not None:
         init.constant_(m.bias, 0)
-    elif isinstance(m, nn.BatchNorm2d):
+    if isinstance(m, nn.BatchNorm2d):
         init.constant_(m.weight, 1)
         init.constant_(m.bias, 0)
 
