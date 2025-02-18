@@ -66,19 +66,10 @@ class FakeImageGenerator(nn.Module):
         x_labels = self.fc_labels(labels)
         x_latent = self.fc_latent(latent)
         x = (x_labels + x_latent).view(-1, 256, 8, 16)
-
-        x = self.upsample(x)
-        x = self.leaky_relu(self.film1(self.conv1(x), labels))
-
-        x = self.upsample(x)
-        x = self.leaky_relu(self.film2(self.conv2(x), labels))
-
-        x = self.upsample(x)
-        x = self.leaky_relu(self.film3(self.conv3(x), labels))
-
-        x = self.upsample(x)
-        x = self.tanh(self.conv4(x))
-
+        x = self.leaky_relu(self.film1(self.conv1(self.upsample(x)), labels))
+        x = self.leaky_relu(self.film2(self.conv2(self.upsample(x)), labels))
+        x = self.leaky_relu(self.film3(self.conv3(self.upsample(x)), labels))
+        x = self.tanh(self.conv4(self.upsample(x)))
         return x
 
 

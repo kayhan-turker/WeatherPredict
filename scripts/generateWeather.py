@@ -4,6 +4,7 @@ import os
 
 from models import *  # Import the generator class
 from settings import *  # Ensure the settings match
+from config import *  # Ensure the settings match
 
 
 # Load the trained generator
