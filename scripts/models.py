@@ -35,7 +35,6 @@ class FiLMLayer(nn.Module):
         nn.init.constant_(self.beta.bias, 0)  # Start beta at 0 (no shift)
 
     def forward(self, x, channels):
-        x = self.norm(x)
         gamma = self.gamma(channels).unsqueeze(2).unsqueeze(3)
         beta = self.beta(channels).unsqueeze(2).unsqueeze(3)
         return gamma * x + beta
