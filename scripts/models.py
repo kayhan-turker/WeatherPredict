@@ -1,24 +1,21 @@
 import torch
 import torch.nn as nn
+import torch.nn.init as init
 
 from settings import *
 
 
-def initialize_weights(model):
-    for m in model.modules():
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.Linear):
-            if isinstance(m, nn.LeakyReLU):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='leaky_relu')
-            else:
-                nn.init.xavier_uniform_(m.weight)
-            nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.BatchNorm2d):
-            nn.init.constant_(m.weight, 1)
-            nn.init.constant_(m.bias, 0)
+def weights_init(m):
+    if isinstance(m, nn.Linear) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
+        if isinstance(m, nn.ConvTranspose2d) and isinstance(m, nn.Linear):
+            init.kaiming_normal_(m.weight, a=0.2, mode='fan_in', nonlinearity='leaky_relu')  # Best for LeakyReLU
+        else:
+            init.xavier_uniform_(m.weight)  # Best for Tanh/Sigmoid
+        if m.bias is not None:
+            init.constant_(m.bias, 0)
+    elif isinstance(m, nn.BatchNorm2d):
+        init.constant_(m.weight, 1)
+        init.constant_(m.bias, 0)
 
 
 class FiLMLayer(nn.Module):
