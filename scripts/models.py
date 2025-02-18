@@ -22,11 +22,10 @@ def initialize_weights(model):
 
 
 class FiLMLayer(nn.Module):
-    def __init__(self, num_features, num_labels):
+    def __init__(self, num_channels, num_labels):
         super().__init__()
-        self.gamma = nn.Linear(num_labels, num_features)
-        self.beta = nn.Linear(num_labels, num_features)
-        self.norm = nn.LayerNorm(num_features, elementwise_affine=False)
+        self.gamma = nn.Linear(num_labels, num_channels)
+        self.beta = nn.Linear(num_labels, num_channels)
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -35,10 +34,10 @@ class FiLMLayer(nn.Module):
         nn.init.xavier_uniform_(self.beta.weight)
         nn.init.constant_(self.beta.bias, 0)  # Start beta at 0 (no shift)
 
-    def forward(self, x, features):
+    def forward(self, x, channels):
         x = self.norm(x)
-        gamma = self.gamma(features).unsqueeze(2).unsqueeze(3)
-        beta = self.beta(features).unsqueeze(2).unsqueeze(3)
+        gamma = self.gamma(channels).unsqueeze(2).unsqueeze(3)
+        beta = self.beta(channels).unsqueeze(2).unsqueeze(3)
         return gamma * x + beta
 
     def get_std_parameters(self):
@@ -56,16 +55,22 @@ class FakeImageGenerator(nn.Module):
         self.fc_labels = nn.Linear(num_labels, 64 * 8 * 16)
         self.fc_latent = nn.Linear(latent_dim, 64 * 8 * 16)
 
-        self.conv1 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
-        self.conv2 = nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1)
-        self.conv3 = nn.ConvTranspose2d(16, 8, kernel_size=4, stride=2, padding=1)
-        self.conv4 = nn.ConvTranspose2d(8, 3, kernel_size=4, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(16, 8, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(8, 3, kernel_size=3, stride=1, padding=1)
+
+        self.upsample = nn.Upsample(scale_factor=2)
+
+        # self.norm1 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
+        # self.norm2 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
+        # self.norm3 = nn.LayerNorm([num_channels, 1, 1], elementwise_affine=False)
+
+        self.fc_film = nn.Linear(64 * 8 * 16, 128)
 
         self.film1 = FiLMLayer(32, 128)
         self.film2 = FiLMLayer(16, 128)
         self.film3 = FiLMLayer(8, 128)
-
-        self.fc_film = nn.Linear(64 * 8 * 16, 128)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -77,9 +82,13 @@ class FakeImageGenerator(nn.Module):
 
         x = z.view(-1, 64, 8, 16)
         z_film = self.fc_film(z)
+        x = self.upsample(x)
         x = self.leaky_relu(self.film1(self.conv1(x), z_film))
+        x = self.upsample(x)
         x = self.leaky_relu(self.film2(self.conv2(x), z_film))
+        x = self.upsample(x)
         x = self.leaky_relu(self.film3(self.conv3(x), z_film))
+        x = self.upsample(x)
         x = self.tanh(self.conv4(x))
         return x
 
