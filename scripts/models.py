@@ -26,6 +26,7 @@ class FiLMLayer(nn.Module):
         super().__init__()
         self.gamma = nn.Linear(num_labels, num_features)
         self.beta = nn.Linear(num_labels, num_features)
+        self.norm = nn.LayerNorm(num_features, elementwise_affine=False)
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -35,11 +36,10 @@ class FiLMLayer(nn.Module):
         nn.init.constant_(self.beta.bias, 0)  # Start beta at 0 (no shift)
 
     def forward(self, x, features):
-        mean = x.mean(dim=[2, 3], keepdim=True)
-        std = x.std(dim=[2, 3], keepdim=True)
+        x = self.norm(x)
         gamma = self.gamma(features).unsqueeze(2).unsqueeze(3)
         beta = self.beta(features).unsqueeze(2).unsqueeze(3)
-        return gamma * (x - mean) / (std + 1e-5) + beta  # Scale and shift feature maps
+        return gamma * x + beta
 
     def get_std_parameters(self):
         return torch.cat([
