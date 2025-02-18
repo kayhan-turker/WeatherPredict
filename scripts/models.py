@@ -84,15 +84,15 @@ class FakeImageGenerator(nn.Module):
 
         x = self.upsample(x)
         z = self.fc_z_film1(labels)
-        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x)), z))
+        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), z)))
 
         x = self.upsample(x)
         z = self.fc_z_film2(z)
-        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x)), z))
+        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), z)))
 
         x = self.upsample(x)
         z = self.fc_z_film3(z)
-        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x)), z))
+        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), z)))
 
         x = self.upsample(x)
         x = self.tanh(self.conv4(x))
