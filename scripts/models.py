@@ -61,15 +61,14 @@ class FakeImageGenerator(nn.Module):
         self.norm3 = nn.BatchNorm2d(32)
 
         self.leaky_relu = nn.LeakyReLU()
-        self.dropout = nn.Dropout(0.2)
         self.tanh = nn.Tanh()
 
     def forward(self, latent, labels):
         z = torch.cat((latent, labels), dim=1)
         x = self.fc(z).view(-1, 256, 8, 16)
-        x = self.dropout(self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels))))
-        x = self.dropout(self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels))))
-        x = self.dropout(self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels))))
+        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
+        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels)))
+        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels)))
         x = self.tanh(self.conv4(x))
         return x
 
