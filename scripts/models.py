@@ -35,10 +35,12 @@ class FiLMLayer(nn.Module):
         nn.init.xavier_uniform_(self.beta.weight)
         nn.init.constant_(self.beta.bias, 0)  # Start beta at 0 (no shift)
 
-    def forward(self, x, labels):
-        gamma = self.gamma(labels).unsqueeze(2).unsqueeze(3)
-        beta = self.beta(labels).unsqueeze(2).unsqueeze(3)
-        return gamma * x + beta  # Scale and shift feature maps
+    def forward(self, x, features):
+        mean = x.mean(dim=[2, 3], keepdim=True)
+        std = x.std(dim=[2, 3], keepdim=True)
+        gamma = self.gamma(features).unsqueeze(2).unsqueeze(3)
+        beta = self.beta(features).unsqueeze(2).unsqueeze(3)
+        return gamma * (x - mean) / (std + 1e-5) + beta  # Scale and shift feature maps
 
     def get_std_parameters(self):
         return torch.cat([
