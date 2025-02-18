@@ -52,11 +52,8 @@ def get_weather_string():
     data = {k: abbreviate(v) for k, v in data.items()}
 
     ts = datetime.now().replace(second=round(datetime.now().second, -1) % 60, microsecond=0)
-    # Old file name structure
-    # return f"{ts.strftime('%Y_%m_%d_%H_%M_%S')}_{data['Temperature']}_{data['Pressure']}_{data['Tendency']}_
-    # {data['Condition']}_{data['Dew Point']}_{data['Humidity']}_{sun_dir}_{sun_alt}"
-    return (f"{ts.strftime('%Y_%m_%d_%H_%M_%S')}_{data['Temperature']}_{data['Pressure']}_{data['Humidity']}_{data['Wind Speed']}"
-            f"_{data['Visibility']}_{data['Dew Point']}_{data['Tendency']}_{data['Condition']}_{sun_dir}_{sun_alt}")
+    return (f"{ts.strftime('%Y_%m_%d_%H_%M_%S')}_{data['Temperature']}_{data['Pressure']}_{data['Tendency']}_"
+            f"{data['Condition']}_{data['Dew Point']}_{data['Humidity']}_{sun_dir}_{sun_alt}")
 
 
 def get_stream_url():
