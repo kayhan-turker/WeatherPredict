@@ -277,10 +277,10 @@ for epoch in range(epochs):
     print("-" * 100)
     print(f"Epoch {epoch + 1}/{epochs}, Loss_G: {loss_G.item():.3f}, Loss_D: {loss_D.item():.3f}")
     print("")
-    print(f"G Realism Score: {torch.abs(torch.ones_like(pred_fake[:, -1]) - pred_fake[:, -1]).mean().item():.3f} "
-          f"Label Score: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
-    print(f"D Realism Score: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
-          f"Label Score: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
+    print(f"G Realism Loss: {torch.abs(torch.ones_like(pred_fake[:, -1]) - pred_fake[:, -1]).mean().item():.3f} "
+          f"Label Loss: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
+    print(f"D Realism Loss: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
+          f"Label Loss: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print("")
     print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item():.3f}, γ2 = {film2_std_params[0].item():.3f}, γ3 = {film3_std_params[0].item():.3f}")
     print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1].item():.3f}, γ2 = {film2_std_params[1].item():.3f}, γ3 = {film3_std_params[1].item():.3f}")

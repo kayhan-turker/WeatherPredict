@@ -9,7 +9,7 @@ from settings import *  # Ensure the settings match
 from config import *  # Ensure the settings match
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "model_032p.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_18_21_59_57_gen_epoch_81.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
@@ -21,6 +21,12 @@ generator.load_state_dict(checkpoint["state_dict"])
 generator.label_means = checkpoint["label_means"]
 generator.label_stds = checkpoint["label_stds"]
 generator.eval()
+
+# Check BatchNorm running stats if results are off
+for m in generator.modules():
+    if isinstance(m, nn.BatchNorm2d):
+        print("Running Mean:", m.running_mean)
+        print("Running Var:", m.running_var)
 
 output_folder = GENERATION_OUTPUT_PATH + model_path[:19] + "/"
 os.makedirs(output_folder, exist_ok=True)

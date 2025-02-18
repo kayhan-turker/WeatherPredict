@@ -55,9 +55,9 @@ class FakeImageGenerator(nn.Module):
         self.film2 = FiLMLayer(64, num_labels)
         self.film3 = FiLMLayer(32, num_labels)
 
-        self.norm1 = nn.BatchNorm2d(128)
-        self.norm2 = nn.BatchNorm2d(64)
-        self.norm3 = nn.BatchNorm2d(32)
+        self.norm1 = nn.LayerNorm([128, 16, 32], elementwise_affine=False)
+        self.norm2 = nn.LayerNorm([64, 32, 64], elementwise_affine=False)
+        self.norm3 = nn.LayerNorm([32, 64, 128], elementwise_affine=False)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -79,9 +79,9 @@ class LabelPredictor(nn.Module):
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
 
-        self.norm1 = nn.BatchNorm2d(16)
-        self.norm2 = nn.BatchNorm2d(32)
-        self.norm3 = nn.BatchNorm2d(64)
+        self.norm1 = nn.LayerNorm([16, 128, 256], elementwise_affine=False)
+        self.norm2 = nn.LayerNorm([32, 64, 128], elementwise_affine=False)
+        self.norm3 = nn.LayerNorm([64, 32, 64], elementwise_affine=False)
 
         self.fc1 = nn.Linear(64 * 16 * 32, 128)
         self.fc2 = nn.Linear(128, output_size + 1)  # Updated to match new label size
