@@ -16,10 +16,16 @@ torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
 generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
-checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+checkpoint = torch.load(model_path, map_location=device)
 generator.load_state_dict(checkpoint["state_dict"])
 generator.label_means = checkpoint["label_means"]
 generator.label_stds = checkpoint["label_stds"]
+# Restore BatchNorm statistics
+if "batch_norm_stats" in checkpoint:
+    for name, m in generator.named_modules():
+        if isinstance(m, nn.BatchNorm2d) and name in checkpoint["batch_norm_stats"]:
+            m.running_mean = checkpoint["batch_norm_stats"][name]["running_mean"]
+            m.running_var = checkpoint["batch_norm_stats"][name]["running_var"]
 generator.eval()
 
 # Check BatchNorm running stats if results are off

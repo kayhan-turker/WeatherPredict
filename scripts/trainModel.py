@@ -250,11 +250,16 @@ for epoch in range(epochs):
         torch.save({
             "state_dict": generator.state_dict(),
             "label_means": label_means,
-            "label_stds": label_stds
+            "label_stds": label_stds,
+            "batch_norm_stats": {
+                name: {"running_mean": m.running_mean, "running_var": m.running_var}
+                for name, m in generator.named_modules() if isinstance(m, nn.BatchNorm2d)
+            }
         }, save_path)
         print("\n" + "=" * 100)
         print(f"Saved Generator Model: {save_path}")
         print("\n" + "=" * 100)
+
 
     output_name = get_image_output_name(fake_labels, label_means, label_stds)
 
