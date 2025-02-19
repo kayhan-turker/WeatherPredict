@@ -1,25 +1,26 @@
-from PIL import Image
-import numpy as np
 import os
 
-from models import *  # Import the generator class
-from settings import *  # Ensure the settings match
 from config import *  # Ensure the settings match
+from trainingResults import *
 
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "2025_02_17_00_08_12_gen_epoch_31.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_18_19_34_15_gen_epoch_51.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
-generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
 checkpoint = torch.load(model_path, map_location=device, weights_only=False)
-generator.load_state_dict(checkpoint["state_dict"])
-generator.label_means = checkpoint["label_means"]
-generator.label_stds = checkpoint["label_stds"]
+generator = checkpoint["model"].to(device)
 generator.eval()
+
+label_means = checkpoint["label_means"]
+label_stds = checkpoint["label_stds"]
+
+# Initialize latent vector
+latent_vector = torch.randn(1, LATENT_DIM, device=device)
+label_vector = torch.randn(1, NUM_LABELS, device=device)
 
 output_folder = GENERATION_OUTPUT_PATH + model_path[:19] + "/"
 os.makedirs(output_folder, exist_ok=True)

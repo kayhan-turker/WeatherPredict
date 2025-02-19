@@ -8,13 +8,13 @@ from settings import *
 from config import *
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "model_034a.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_18_19_34_15_gen_epoch_51.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
-checkpoint = torch.load(model_path, map_location=device)
+checkpoint = torch.load(model_path, map_location=device, weights_only=False)
 generator = checkpoint["model"].to(device)
 generator.eval()
 
