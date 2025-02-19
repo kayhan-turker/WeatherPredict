@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
-from settings import *
 from config import *
 
 
@@ -75,13 +74,9 @@ class FakeImageGenerator(nn.Module):
     def save_model(self, model_save_name, label_means, label_stds):
         save_path = MODEL_SAVE_PATH + model_save_name
         torch.save({
-            "state_dict": self.state_dict(),
+            "model": self,
             "label_means": label_means,
-            "label_stds": label_stds,
-            "batch_norm_stats": {
-                name: {"running_mean": m.running_mean, "running_var": m.running_var}
-                for name, m in self.named_modules() if isinstance(m, nn.BatchNorm2d)
-            }
+            "label_stds": label_stds
         }, save_path)
         print("\n" + "=" * 100)
         print(f"Saved Generator Model: {save_path}")

@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 import tkinter as tk
 from tkinter import ttk
-import os
 
 from models import *
 from settings import *
@@ -15,27 +14,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
-generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
-checkpoint = torch.load(model_path, map_location=device, weights_only=False)
-generator.load_state_dict(checkpoint["state_dict"])
-generator.label_means = checkpoint["label_means"]
-generator.label_stds = checkpoint["label_stds"]
-# Restore BatchNorm statistics
-if "batch_norm_stats" in checkpoint:
-    for name, m in generator.named_modules():
-        if isinstance(m, nn.BatchNorm2d) and name in checkpoint["batch_norm_stats"]:
-            m.running_mean = checkpoint["batch_norm_stats"][name]["running_mean"]
-            m.running_var = checkpoint["batch_norm_stats"][name]["running_var"]
+# checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+checkpoint = torch.load(model_path)
+
+generator = checkpoint["model"]  # .to(device)
 generator.eval()
 
-# Check BatchNorm running stats if results are off
-for m in generator.modules():
-    if isinstance(m, nn.BatchNorm2d):
-        print("Running Mean:", m.running_mean)
-        print("Running Var:", m.running_var)
-
-output_folder = GENERATION_OUTPUT_PATH + model_path[:19] + "/"
-os.makedirs(output_folder, exist_ok=True)
+label_means = checkpoint["label_means"]
+label_stds = checkpoint["label_stds"]
 
 # Initialize latent vector
 latent_vector = torch.randn(1, LATENT_DIM, device=device)
