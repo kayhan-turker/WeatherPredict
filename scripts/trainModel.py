@@ -6,7 +6,7 @@ import torch.backends.cudnn as cudnn
 
 from models import *
 from config import *
-from scripts.trainingResults import *
+from trainingResults import *
 
 # ====================================
 # 0. Preparation
