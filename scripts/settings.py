@@ -3,7 +3,6 @@ import time
 
 
 SELECTED_INDICES = [6, 7, 10, 11, 12, 13]
-BATCH_SIZE = 64
 EPOCHS_TO_SAVE = 10
 
 LABEL_NAMES = ["Date", "Time", "Temp", "Pres", "Dew", "Hum", "Dir", "Alt"]
