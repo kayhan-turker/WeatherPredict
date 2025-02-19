@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 import torch
 
-from scripts.settings import *
+from settings import *
 
 
 def get_image_output_name(labels, label_means, label_stds):
