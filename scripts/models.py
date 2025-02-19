@@ -75,10 +75,6 @@ class FakeImageGenerator(nn.Module):
         self.norm2 = nn.BatchNorm2d(32)
         self.norm3 = nn.BatchNorm2d(16)
 
-        self.noise1 = NoiseInjection(64, 0.1)
-        self.noise2 = NoiseInjection(32, 0.1)
-        self.noise3 = NoiseInjection(16, 0.1)
-
         self.film_y1 = FiLMLayer(64, num_labels)
         self.film_y2 = FiLMLayer(32, num_labels)
         self.film_y3 = FiLMLayer(16, num_labels)
@@ -94,13 +90,13 @@ class FakeImageGenerator(nn.Module):
         x = torch.cat((y, z), dim=1)
         x = self.fc(x).view(-1, 128, H_DIV_16, W_DIV_16)
 
-        f1 = self.noise1(self.norm1(self.conv1(x)))
+        f1 = (self.norm1(self.conv1(x)))
         f1 = self.leaky_relu(self.film_z1(self.film_y1(f1, y), z))
 
-        f2 = self.noise2(self.norm2(self.conv2(f1)))
+        f2 = (self.norm2(self.conv2(f1)))
         f2 = self.leaky_relu(self.film_z2(self.film_y2(f2, y), z))
 
-        f3 = self.noise3(self.norm3(self.conv3(f2)))
+        f3 = (self.norm3(self.conv3(f2)))
         f3 = self.leaky_relu(self.film_z3(self.film_y3(f3, y), z))
 
         x = self.tanh(self.conv4(f3))
