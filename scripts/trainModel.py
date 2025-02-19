@@ -185,7 +185,9 @@ print("-" * 100)
 
 num_epochs = 150
 last_epoch_time = datetime.now()
-g_label_loss_factor = 4.0
+g_label_loss_factor = 8.0
+g_latent_image_shift = 1.0
+d_latent_shift_loss = 1.0
 d_label_loss_factor = 1.5
 
 # Create directory to store outputs
@@ -219,17 +221,15 @@ for epoch in range(num_epochs):
         fake_images_shifted = generator(latent, fake_labels)
         pred_fake_shifted = discriminator(fake_images)
 
-        latent_image_shift = 1.0
-        latent_shift_loss = 1.0
         delta_latent = torch.mean(torch.abs(latent_shifted - latent), dim=1)
         delta_image = torch.mean(torch.abs(fake_images_shifted - fake_images), dim=[1, 2, 3])
 
         # Calculate loss
         loss_G_realism = criterion_realism(pred_fake[:, -1], torch.ones_like(pred_fake[:, -1], device=device))
         loss_G_labels = criterion_labels(pred_fake[:, :-1], fake_labels)
-        loss_G_latent_response = torch.mean((delta_latent - latent_image_shift * delta_image) ** 2)
+        loss_G_latent_response = torch.mean((delta_latent - g_latent_image_shift * delta_image) ** 2)
 
-        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels + latent_shift_loss * loss_G_latent_response
+        loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels + d_latent_shift_loss * loss_G_latent_response
 
         # Back propagate
         optimizer_G.zero_grad()
