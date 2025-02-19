@@ -16,6 +16,25 @@ def weights_init(m):
         init.constant_(m.bias, 0)
 
 
+class NoiseInjection(nn.Module):
+    def __init__(self, channels, weight=0.1):
+        super(NoiseInjection, self).__init__()
+        self.weight = nn.Parameter(torch.ones(1, channels, 1, 1) * weight)  # Learnable weight for noise injection
+        self.noise = None  # Placeholder for the constant noise during evaluation
+        self.channels = channels
+
+    def forward(self, x):
+        if self.training:
+            # During training, generate new noise each forward pass
+            self.noise = torch.randn_like(x)
+        else:
+            # During evaluation, use the same noise generated in the first forward pass
+            if self.noise is None:
+                self.noise = torch.randn_like(x)
+
+        return x + self.noise * self.weight
+
+
 class FiLMLayer(nn.Module):
     def __init__(self, num_channels, num_labels):
         super().__init__()
@@ -46,29 +65,43 @@ class FiLMLayer(nn.Module):
 class FakeImageGenerator(nn.Module):
     def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
-        self.fc = nn.Linear(latent_dim + num_labels, 256 * H_DIV_16 * W_DIV_16)
+        self.fc = nn.Linear(IMAGE_HEIGHT * IMAGE_WIDTH, 256 * H_DIV_16 * W_DIV_16)
         self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
         self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
         self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1)
 
-        self.film1 = FiLMLayer(128, num_labels)
-        self.film2 = FiLMLayer(64, num_labels)
-        self.film3 = FiLMLayer(32, num_labels)
-
         self.norm1 = nn.BatchNorm2d(128)
         self.norm2 = nn.BatchNorm2d(64)
         self.norm3 = nn.BatchNorm2d(32)
 
+        self.noise1 = NoiseInjection(128, 0.1)
+        self.noise2 = NoiseInjection(64, 0.1)
+        self.noise3 = NoiseInjection(32, 0.1)
+
+        self.film_y1 = FiLMLayer(128, num_labels)
+        self.film_y2 = FiLMLayer(64, num_labels)
+        self.film_y3 = FiLMLayer(32, num_labels)
+
+        self.film_z1 = FiLMLayer(128, latent_dim)
+        self.film_z2 = FiLMLayer(64, latent_dim)
+        self.film_z3 = FiLMLayer(32, latent_dim)
+
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
 
-    def forward(self, labels, latent, return_features=False):
-        z = torch.cat((latent, labels), dim=1)
-        x = self.fc(z).view(-1, 256, H_DIV_16, W_DIV_16)
-        f1 = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
-        f2 = self.leaky_relu(self.norm2(self.film2(self.conv2(f1), labels)))
-        f3 = self.leaky_relu(self.norm3(self.film3(self.conv3(f2), labels)))
+    def forward(self, x_in, y, z, return_features=False):
+        x = self.fc(x_in).view(-1, 256, H_DIV_16, W_DIV_16)
+
+        f1 = self.noise1(self.norm1(self.conv1(x)))
+        f1 = self.leaky_relu(self.film_z1(self.film_y1(f1, y), z))
+
+        f2 = self.noise2(self.norm2(self.conv2(f1)))
+        f2 = self.leaky_relu(self.film_z2(self.film_y2(f2, y), z))
+
+        f3 = self.noise3(self.norm3(self.conv3(f2)))
+        f3 = self.leaky_relu(self.film_z3(self.film_y3(f3, y), z))
+
         x = self.tanh(self.conv4(f3))
 
         if return_features:
