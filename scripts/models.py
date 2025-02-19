@@ -46,7 +46,7 @@ class FiLMLayer(nn.Module):
 class FakeImageGenerator(nn.Module):
     def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
-        self.fc = nn.Linear(latent_dim + num_labels, 256 * (IMAGE_HEIGHT // 16) * (IMAGE_WIDTH // 16))
+        self.fc = nn.Linear(latent_dim + num_labels, 256 * H_DIV_16 * W_DIV_16)
         self.conv1 = nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
         self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
@@ -65,7 +65,7 @@ class FakeImageGenerator(nn.Module):
 
     def forward(self, latent, labels):
         z = torch.cat((latent, labels), dim=1)
-        x = self.fc(z).view(-1, 256, IMAGE_HEIGHT // 16, IMAGE_WIDTH // 16)
+        x = self.fc(z).view(-1, 256, H_DIV_16, W_DIV_16)
         x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
         x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels)))
         x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels)))
@@ -95,7 +95,7 @@ class LabelPredictor(nn.Module):
         self.norm2 = nn.BatchNorm2d(32)
         self.norm3 = nn.BatchNorm2d(64)
 
-        self.fc1 = nn.Linear(64 * (IMAGE_HEIGHT // 8) * (IMAGE_WIDTH // 8), 128)
+        self.fc1 = nn.Linear(64 * H_DIV_8 * W_DIV_8, 128)
         self.fc2 = nn.Linear(128, output_size + 1)  # Updated to match new label size
 
         self.pool = nn.MaxPool2d(2, 2)
@@ -105,7 +105,7 @@ class LabelPredictor(nn.Module):
         x = self.pool(self.leaky_relu(self.norm1(self.conv1(x))))
         x = self.pool(self.leaky_relu(self.norm2(self.conv2(x))))
         x = self.pool(self.leaky_relu(self.norm3(self.conv3(x))))
-        x = x.view(-1, 64 * (IMAGE_HEIGHT // 8) * (IMAGE_WIDTH // 8))
+        x = x.view(-1, 64 * H_DIV_8 * W_DIV_8)
         x = self.leaky_relu(self.fc1(x))
         return self.fc2(x)
 

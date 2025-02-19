@@ -1,6 +1,8 @@
 from datetime import datetime
 import time
 
+from config import *
+
 
 SELECTED_INDICES = [6, 7, 10, 11, 12, 13]
 EPOCHS_TO_SAVE = 10
@@ -9,6 +11,11 @@ LABEL_NAMES = ["Date", "Time", "Temp", "Pres", "Dew", "Hum", "Dir", "Alt"]
 NUM_LABELS = 8
 LATENT_DIM = 100
 PROGRESS_BAR_SIZE = 72
+
+W_DIV_8 = IMAGE_WIDTH // 8
+H_DIV_8 = IMAGE_HEIGHT // 8
+W_DIV_16 = IMAGE_WIDTH // 16
+H_DIV_16 = IMAGE_HEIGHT // 16
 
 
 def safe_float(val):
