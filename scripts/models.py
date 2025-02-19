@@ -65,7 +65,7 @@ class FiLMLayer(nn.Module):
 class FakeImageGenerator(nn.Module):
     def __init__(self, latent_dim, num_labels):
         super(FakeImageGenerator, self).__init__()
-        self.fc = nn.Linear(1024, 128 * H_DIV_16 * W_DIV_16)
+        self.fc = nn.Linear(latent_dim + num_labels, 128 * H_DIV_16 * W_DIV_16)
         self.conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
         self.conv2 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1)
         self.conv3 = nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1)
@@ -90,8 +90,9 @@ class FakeImageGenerator(nn.Module):
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
 
-    def forward(self, x_in, y, z, return_features=False):
-        x = self.fc(x_in).view(-1, 128, H_DIV_16, W_DIV_16)
+    def forward(self, y, z, return_features=False):
+        x = torch.cat((y, z), dim=1)
+        x = self.fc(x).view(-1, 128, H_DIV_16, W_DIV_16)
 
         f1 = self.noise1(self.norm1(self.conv1(x)))
         f1 = self.leaky_relu(self.film_z1(self.film_y1(f1, y), z))

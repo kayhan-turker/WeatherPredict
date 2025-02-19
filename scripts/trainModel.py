@@ -208,18 +208,17 @@ for epoch in range(num_epochs):
         # ----------------------
         # Train Generator
         # ----------------------
-        x_in = torch.randn(labels.shape[0], IMAGE_HEIGHT * IMAGE_WIDTH).to(device, non_blocking=True)
         latent = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)
         linear_part = torch.rand(labels.shape[0], 2).to(device, non_blocking=True) * 2 - 1
         normal_part = torch.randn(labels.shape[0], labels.shape[1] - 2).to(device, non_blocking=True)
         fake_labels = torch.cat([linear_part, normal_part], dim=1)
 
-        fake_images, features = generator(x_in, fake_labels, latent, return_features=True)
+        fake_images, features = generator(fake_labels, latent, return_features=True)
         pred_fake = discriminator(fake_images)
 
         # Generate another image to analyze latent shift. Use the same labels
         latent_shifted = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)
-        fake_images_shifted, features_shifted = generator(x_in, fake_labels, latent, return_features=True)
+        fake_images_shifted, features_shifted = generator(fake_labels, latent, return_features=True)
         pred_fake_shifted = discriminator(fake_images)
 
         delta_latent = torch.mean(torch.abs(latent_shifted - latent), dim=1)
