@@ -40,8 +40,8 @@ def refresh_results(generator, epoch, num_epochs, last_epoch_time, loss_G, loss_
     print(f"Epoch {epoch + 1}/{num_epochs}, Loss_G: {loss_G.item():.3f}, Loss_D: {loss_D.item():.3f}")
     print("")
     print(f"G Realism Loss: {torch.abs(torch.ones_like(pred_fake[:, -1]) - pred_fake[:, -1]).mean().item():.3f} "
-          f"Label Loss: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]"
-          f"Latent Variance: Delta Latent: {delta_latent.mean().item()} Delta Image: {delta_feature.mean().item()}")
+          f"Label Loss: [{', '.join([f'{torch.abs(fake_labels[:, x] - pred_fake[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}] "
+          f"Latent Variance: Delta Latent: {delta_latent.mean().item():.3f} Delta Image: {delta_feature.mean().item():.3f}")
     print(f"D Realism Loss: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
           f"Label Loss: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
     print("")
