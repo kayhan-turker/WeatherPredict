@@ -63,13 +63,16 @@ class FakeImageGenerator(nn.Module):
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
 
-    def forward(self, latent, labels):
+    def forward(self, latent, labels, return_features=False):
         z = torch.cat((latent, labels), dim=1)
         x = self.fc(z).view(-1, 256, H_DIV_16, W_DIV_16)
-        x = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
-        x = self.leaky_relu(self.norm2(self.film2(self.conv2(x), labels)))
-        x = self.leaky_relu(self.norm3(self.film3(self.conv3(x), labels)))
-        x = self.tanh(self.conv4(x))
+        f1 = self.leaky_relu(self.norm1(self.film1(self.conv1(x), labels)))
+        f2 = self.leaky_relu(self.norm2(self.film2(self.conv2(f1), labels)))
+        f3 = self.leaky_relu(self.norm3(self.film3(self.conv3(f2), labels)))
+        x = self.tanh(self.conv4(f3))
+
+        if return_features:
+            return x, [f1, f2, f3]
         return x
 
     def save_model(self, model_save_name, label_means, label_stds):

@@ -212,12 +212,13 @@ for epoch in range(num_epochs):
         linear_part = torch.rand(labels.shape[0], 2).to(device, non_blocking=True) * 2 - 1
         normal_part = torch.randn(labels.shape[0], labels.shape[1] - 2).to(device, non_blocking=True)
         fake_labels = torch.cat([linear_part, normal_part], dim=1)
-        fake_images = generator(latent, fake_labels)
+
+        fake_images, features = generator(latent, fake_labels, return_features=True)
         pred_fake = discriminator(fake_images)
 
         # Generate another image to analyze latent shift. Use the same labels
         latent_shifted = torch.randn(labels.shape[0], LATENT_DIM).to(device, non_blocking=True)
-        fake_images_shifted = generator(latent, fake_labels)
+        fake_images_shifted, features_shifted = generator(latent, fake_labels, return_features=True)
         pred_fake_shifted = discriminator(fake_images)
 
         delta_latent = torch.mean(torch.abs(latent_shifted - latent), dim=1)
@@ -226,7 +227,7 @@ for epoch in range(num_epochs):
         # Calculate loss
         loss_G_realism = criterion_realism(pred_fake[:, -1], torch.ones_like(pred_fake[:, -1], device=device))
         loss_G_labels = criterion_labels(pred_fake[:, :-1], fake_labels)
-        loss_G_latent_response = torch.mean((delta_latent - g_latent_image_shift * delta_image) ** 2)
+        loss_G_latent_response = sum(torch.mean(torch.abs(f1 - f2)) for f1, f2 in zip(features, features_shifted))
 
         loss_G = loss_G_realism + g_label_loss_factor * loss_G_labels + d_latent_shift_loss * loss_G_latent_response
 
