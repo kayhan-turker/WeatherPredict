@@ -201,8 +201,8 @@ for epoch in range(num_epochs):
     for images, labels in trainloader:
         batch_num += 1
         print("", end="\r")
-        print(f"Batch progress: {((batch_num * 100) // NUM_BATCHES):.1f}% [{('#' * (batch_num // 3))}"
-              f"{('-' * ((NUM_BATCHES // 3 - batch_num // 3)))}]", end="")
+        print(f"Batch progress: {((batch_num * 100) // NUM_BATCHES):.1f}% [{('#' * round(batch_num / NUM_BATCHES * PROGRESS_BAR_SIZE))}"
+              f"{('-' * round((1 - batch_num / NUM_BATCHES) * PROGRESS_BAR_SIZE))}]", end="")
         images, labels = images.to(device, non_blocking=True), labels.to(device, non_blocking=True)
 
         # ----------------------
