@@ -37,7 +37,7 @@ def generate_image(input_labels):
 
 
 # Example: Generate image with custom labels
-example_labels = [0.5, -0.2, 1.1, 0.3, -0.9, 0.4, -0.1, 0.2]  # Match the expected label count
+example_labels = [0.5, -0.2, 1.1, 1.0, 1.0, -1.0, 1.0, 1.0]  # Match the expected label count
 generated_img = generate_image(example_labels)
 generated_img.show()  # View the image
 

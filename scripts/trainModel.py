@@ -112,8 +112,7 @@ class ImageDataset(Dataset):
 # 3. Transformations
 # ====================================
 transform = transforms.Compose([
-    transforms.Resize(128),
-    transforms.Pad((14, 0, 15, 0), fill=0, padding_mode="constant"),
+    transforms.Resize((IMAGE_HEIGHT, IMAGE_WIDTH)),
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
