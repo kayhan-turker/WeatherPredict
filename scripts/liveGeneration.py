@@ -14,10 +14,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
 torch.autograd.set_detect_anomaly(False)
 
-# checkpoint = torch.load(model_path, map_location=device, weights_only=False)
-checkpoint = torch.load(model_path)
-
-generator = checkpoint["model"]  # .to(device)
+checkpoint = torch.load(model_path, map_location=device)
+generator = checkpoint["model"].to(device)
 generator.eval()
 
 label_means = checkpoint["label_means"]
