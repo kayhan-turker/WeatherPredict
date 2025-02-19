@@ -30,10 +30,6 @@ def refresh_results(generator, epoch, num_epochs, last_epoch_time, loss_G, loss_
     time_since_last = (current_time - last_epoch_time).total_seconds()
     datetime_next = current_time + (current_time - last_epoch_time)
 
-    film1_std_params = generator.film1.get_std_parameters().cpu().detach()
-    film2_std_params = generator.film2.get_std_parameters().cpu().detach()
-    film3_std_params = generator.film3.get_std_parameters().cpu().detach()
-
     print("\n" + "=" * 100)
     print(f"Time: {str(current_time)[:19]} | Epoch Time (s): {time_since_last:.2f} | Next Epoch: {str(datetime_next)[:19]}")
     print("-" * 100)
@@ -44,11 +40,6 @@ def refresh_results(generator, epoch, num_epochs, last_epoch_time, loss_G, loss_
           f"Latent Variance: Delta Latent: {delta_latent.mean().item():.3f} Delta Feature: {delta_feature.mean().item():.3f}")
     print(f"D Realism Loss: {torch.abs(torch.ones_like(pred_real[:, -1]) - pred_real[:, -1]).mean().item():.3f} "
           f"Label Loss: [{', '.join([f'{torch.abs(labels[:, x] - pred_real[:, x]).mean().item():.3f}' for x in range(NUM_LABELS)])}]")
-    print("")
-    print(f"G FiLM Gamma Weight Std: γ1 = {film1_std_params[0].item():.3f}, γ2 = {film2_std_params[0].item():.3f}, γ3 = {film3_std_params[0].item():.3f}")
-    print(f"G FiLM Gamma Biases Std: γ1 = {film1_std_params[1].item():.3f}, γ2 = {film2_std_params[1].item():.3f}, γ3 = {film3_std_params[1].item():.3f}")
-    print(f"G FiLM Beta Weights Std: β1 = {film1_std_params[2].item():.3f}, β2 = {film2_std_params[2].item():.3f}, β3 = {film3_std_params[2].item():.3f}")
-    print(f"G FiLM Beta Biases Std: β1 = {film1_std_params[3].item():.3f}, β2 = {film2_std_params[3].item():.3f}, β3 = {film3_std_params[3].item():.3f}")
     print("")
     print("                                  ['Date', 'Time', 'Temp', 'Press', 'Dew', 'Hum', 'Dir', 'Alt']")
     print("Real Input Labels:               ", [f"{x:.1f}" for x in labels[0].cpu().numpy()])
