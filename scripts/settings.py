@@ -8,8 +8,6 @@ EPOCHS_TO_SAVE = 10
 LABEL_NAMES = ["Date", "Time", "Temp", "Pres", "Dew", "Hum", "Dir", "Alt"]
 NUM_LABELS = 8
 LATENT_DIM = 100
-IMAGE_WIDTH = 480
-IMAGE_HEIGHT = 272
 PROGRESS_BAR_SIZE = 72
 
 
