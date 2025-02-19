@@ -10,7 +10,7 @@ LABEL_NAMES = ["Date", "Time", "Temp", "Pres", "Dew", "Hum", "Dir", "Alt"]
 NUM_LABELS = 8
 LATENT_DIM = 100
 IMAGE_WIDTH = 480
-IMAGE_HEIGHT = 270
+IMAGE_HEIGHT = 272
 
 
 def safe_float(val):
