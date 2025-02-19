@@ -29,7 +29,7 @@ class NoiseInjection(nn.Module):
             self.noise = torch.randn_like(x)
         else:
             # During evaluation, use the same noise generated in the first forward pass
-            if self.noise is None:
+            if self.noise is None or self.noise.size() != x.size():
                 self.noise = torch.randn_like(x)
 
         return x + self.noise * self.weight
@@ -104,7 +104,6 @@ class FakeImageGenerator(nn.Module):
         f3 = self.leaky_relu(self.film_z3(self.film_y3(f3, y), z))
 
         x = self.tanh(self.conv4(f3))
-
         if return_features:
             return x, [f1, f2, f3]
         return x

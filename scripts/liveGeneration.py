@@ -8,7 +8,7 @@ from settings import *
 from config import *
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "2025_02_19_09_28_13_gen_epoch_111.pth"
+model_path = MODEL_SAVE_PATH + "2025_02_19_13_56_05_gen_epoch_1.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
@@ -44,7 +44,7 @@ def update_label(index, val):
 # Function to generate and display an image
 def update_image():
     with torch.no_grad():
-        img_tensor = generator(latent_vector, label_vector).squeeze(0).cpu().numpy().transpose(1, 2, 0)
+        img_tensor = generator(label_vector, latent_vector).squeeze(0).cpu().numpy().transpose(1, 2, 0)
         img_tensor = ((img_tensor + 1) * 127.5).astype(np.uint8)  # Convert to 0-255 range
         img_tensor = cv2.resize(img_tensor, (512, 256), interpolation=cv2.INTER_LINEAR)
         img_tensor = cv2.cvtColor(img_tensor, cv2.COLOR_RGB2BGR)
