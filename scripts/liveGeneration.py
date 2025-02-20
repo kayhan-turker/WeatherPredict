@@ -8,7 +8,7 @@ from settings import *
 from config import *
 
 # Load the trained generator
-model_path = MODEL_SAVE_PATH + "2025_02_19_13_56_05_gen_epoch_1.pth"
+model_path = MODEL_SAVE_PATH + "model_038c.pth"
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.backends.cudnn.benchmark = True
