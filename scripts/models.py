@@ -126,7 +126,7 @@ class FakeImageGenerator(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, y, z, return_features=False):
-        y_init = torch.cat((y, z), dim=1)
+        y_init = y
         z = self.fc_z(z).view(-1, 64, H_DIV_16, W_DIV_16)         # -> 64 x W/16 x H/16
         y = self.fc_y(y).view(-1, 64, H_DIV_16, W_DIV_16)         # -> 64 x W/16 x H/16
         x = torch.cat((y, z), dim=1)                     # -> 128 x W/16 x H/16
