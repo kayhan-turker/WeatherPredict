@@ -1,3 +1,4 @@
 /data/
 /models/
 /scripts/config.py
+/scripts/data_management/scaleToDirectory.py
