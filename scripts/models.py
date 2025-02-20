@@ -114,9 +114,9 @@ class FakeImageGenerator(nn.Module):
         self.noise2 = NoiseInjection(24, 0.004)
         self.noise3 = NoiseInjection(16, 0.006)
 
-        self.film1 = FiLMLayer(64, y_dim + z_dim)
-        self.film2 = FiLMLayer(24, y_dim + z_dim)
-        self.film3 = FiLMLayer(16, y_dim + z_dim)
+        self.film1 = FiLMLayer(64, y_dim)
+        self.film2 = FiLMLayer(24, y_dim)
+        self.film3 = FiLMLayer(16, y_dim)
 
         self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(24)
@@ -126,7 +126,7 @@ class FakeImageGenerator(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, y, z, return_features=False):
-        yz = torch.cat((y, z), dim=1)
+        y_init = torch.cat((y, z), dim=1)
         z = self.fc_z(z).view(-1, 64, H_DIV_16, W_DIV_16)         # -> 64 x W/16 x H/16
         y = self.fc_y(y).view(-1, 64, H_DIV_16, W_DIV_16)         # -> 64 x W/16 x H/16
         x = torch.cat((y, z), dim=1)                     # -> 128 x W/16 x H/16
@@ -134,17 +134,17 @@ class FakeImageGenerator(nn.Module):
         y = self.conv_y1(y)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
         z = self.conv_z1(z)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
         f1 = torch.cat((self.conv_x1(x), y, z), dim=1)   # 128 x W/16 x H/16 -> 32 x W/8 x H/8 -> 64 x W/8 x H/8
-        f1 = self.leaky_relu(self.norm1(self.film1(self.noise1(f1), yz)))
+        f1 = self.leaky_relu(self.norm1(self.film1(self.noise1(f1), y_init)))
 
         y = self.conv_y2(y)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         z = self.conv_z2(z)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         f2 = torch.cat((self.conv_x2(f1), y, z), dim=1)  # 64 x W/8 x H/8 -> 16 x W/4 x H/4 -> 24 x W/4 x H/4
-        f2 = self.leaky_relu(self.norm2(self.film2(self.noise2(f2), yz)))
+        f2 = self.leaky_relu(self.norm2(self.film2(self.noise2(f2), y_init)))
 
         y = self.conv_y3(y)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         z = self.conv_z3(z)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 24 x W/4 x H/4 -> 8 x W/2 x H/2 -> 16 x W/2 x H/2
-        f3 = self.leaky_relu(self.norm3(self.film3(self.noise3(f3), yz)))
+        f3 = self.leaky_relu(self.norm3(self.film3(self.noise3(f3), y_init)))
 
         x = self.tanh(self.conv_x4(f3))                         # 16 x W/2 x H/2 -> 3 x W/1 x H/1
         if return_features:
