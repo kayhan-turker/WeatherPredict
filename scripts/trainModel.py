@@ -160,7 +160,7 @@ print("8. Training Setup")
 print("-" * 100)
 
 print("  Initialize models.")
-generator = FakeImageGenerator(LATENT_DIM, NUM_LABELS).to(device)
+generator = FakeImageGenerator(NUM_LABELS, LATENT_DIM).to(device)
 discriminator = LabelPredictor(NUM_LABELS).to(device)
 generator.apply(weights_init)
 discriminator.apply(weights_init)
