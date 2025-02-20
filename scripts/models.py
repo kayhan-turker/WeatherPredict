@@ -70,8 +70,8 @@ class FakeImageGenerator(nn.Module):
 
         self.conv_x1 = nn.ConvTranspose2d(128, 32, kernel_size=4, stride=2, padding=1)
         self.conv_x2 = nn.ConvTranspose2d(64, 16, kernel_size=4, stride=2, padding=1)
-        self.conv_x3 = nn.ConvTranspose2d(16, 8, kernel_size=4, stride=2, padding=1)
-        self.conv_x4 = nn.ConvTranspose2d(12, 3, kernel_size=4, stride=2, padding=1)
+        self.conv_x3 = nn.ConvTranspose2d(24, 8, kernel_size=4, stride=2, padding=1)
+        self.conv_x4 = nn.ConvTranspose2d(16, 3, kernel_size=4, stride=2, padding=1)
 
         self.conv_y1 = nn.ConvTranspose2d(64, 16, kernel_size=4, stride=2, padding=1)
         self.conv_y2 = nn.ConvTranspose2d(16, 4, kernel_size=4, stride=2, padding=1)
@@ -82,8 +82,8 @@ class FakeImageGenerator(nn.Module):
         self.conv_z3 = nn.ConvTranspose2d(4, 4, kernel_size=4, stride=2, padding=1)
 
         self.norm1 = nn.BatchNorm2d(64)
-        self.norm2 = nn.BatchNorm2d(16)
-        self.norm3 = nn.BatchNorm2d(12)
+        self.norm2 = nn.BatchNorm2d(24)
+        self.norm3 = nn.BatchNorm2d(16)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
@@ -100,15 +100,15 @@ class FakeImageGenerator(nn.Module):
 
         y = self.conv_y2(y)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         z = self.conv_z2(z)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
-        f2 = torch.cat((self.conv_x2(f1), y, z), dim=1)  # 64 x W/8 x H/8 -> 8 x W/4 x H/4 -> 16 x W/4 x H/4
+        f2 = torch.cat((self.conv_x2(f1), y, z), dim=1)  # 64 x W/8 x H/8 -> 16 x W/4 x H/4 -> 24 x W/4 x H/4
         f2 = self.leaky_relu(self.norm2(f2))
 
         y = self.conv_y3(y)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         z = self.conv_z3(z)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
-        f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 16 x W/4 x H/4 -> 4 x W/2 x H/2 -> 12 x W/2 x H/2
+        f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 24 x W/4 x H/4 -> 8 x W/2 x H/2 -> 16 x W/2 x H/2
         f3 = self.leaky_relu(self.norm3(f3))
 
-        x = self.tanh(self.conv_z4(f3))                         # 12 x W/2 x H/2 -> 3 x W/1 x H/1
+        x = self.tanh(self.conv_z4(f3))                         # 16 x W/2 x H/2 -> 3 x W/1 x H/1
         if return_features:
             return x, [f1, f2, f3]
         return x
