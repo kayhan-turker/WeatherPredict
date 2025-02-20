@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.init as init
 
 from settings import *
 
@@ -44,8 +43,17 @@ class FiLMLayer(nn.Module):
         ])
 
 
-def init_conv_weights(m):
+def init_conv_transpose_weights(m):
     if isinstance(m, nn.ConvTranspose2d):
+        print("convtrans2d init")
+        nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu', a=0.2)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+
+
+def init_conv_weights(m):
+    if isinstance(m, nn.Conv2d):
+        print("conv2d init")
         nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu', a=0.2)
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
@@ -53,6 +61,7 @@ def init_conv_weights(m):
 
 def init_fc_weights(m):
     if isinstance(m, nn.Linear):
+        print("linear init")
         nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu', a=0.2)
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
@@ -60,12 +69,14 @@ def init_fc_weights(m):
 
 def init_bn_weights(m):
     if isinstance(m, nn.BatchNorm2d):
+        print("batch norm init")
         nn.init.constant_(m.weight, 1)
         nn.init.constant_(m.bias, 0)
 
 
 def init_film_weights(m):
     if isinstance(m, FiLMLayer):
+        print("film init")
         nn.init.kaiming_normal_(m.gamma.weight, mode='fan_in', nonlinearity='linear')
         nn.init.constant_(m.gamma.bias, 0)
         nn.init.kaiming_normal_(m.beta.weight, mode='fan_in', nonlinearity='linear')
@@ -74,6 +85,7 @@ def init_film_weights(m):
 
 def init_weights(m):
     init_conv_weights(m)
+    init_conv_transpose_weights(m)
     init_fc_weights(m)
     init_bn_weights(m)
     init_film_weights(m)
