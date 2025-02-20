@@ -185,7 +185,7 @@ print("-" * 100)
 
 num_epochs = 150
 last_epoch_time = datetime.now()
-g_label_loss_factor = 5.0
+g_label_loss_factor = 8.0
 g_latent_feature_shift = 0.0
 d_latent_shift_loss = 1.0
 d_label_loss_factor = 1.5
