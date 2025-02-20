@@ -94,17 +94,17 @@ class FakeImageGenerator(nn.Module):
         x = torch.cat((y, z), dim=1)                     # -> 128 x W/16 x H/16
 
         y = self.conv_y1(y)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
-        z = self.conv_z1(y)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
+        z = self.conv_z1(z)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
         f1 = torch.cat((self.conv_x1(x), y, z), dim=1)   # 128 x W/16 x H/16 -> 32 x W/8 x H/8 -> 64 x W/8 x H/8
         f1 = self.leaky_relu(self.norm1(f1))
 
         y = self.conv_y2(y)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
-        z = self.conv_z2(y)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
+        z = self.conv_z2(z)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         f2 = torch.cat((self.conv_x2(f1), y, z), dim=1)  # 64 x W/8 x H/8 -> 8 x W/4 x H/4 -> 16 x W/4 x H/4
         f2 = self.leaky_relu(self.norm2(f2))
 
         y = self.conv_y3(y)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
-        z = self.conv_z3(y)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
+        z = self.conv_z3(z)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 16 x W/4 x H/4 -> 4 x W/2 x H/2 -> 12 x W/2 x H/2
         f3 = self.leaky_relu(self.norm3(f3))
 
