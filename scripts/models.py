@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
-from config import *
 from settings import *
 
 
@@ -85,6 +84,10 @@ class FakeImageGenerator(nn.Module):
         self.conv_z2 = nn.ConvTranspose2d(16, 4, kernel_size=4, stride=2, padding=1)
         self.conv_z3 = nn.ConvTranspose2d(4, 4, kernel_size=4, stride=2, padding=1)
 
+        self.noise1 = NoiseInjection(64, 0.002)
+        self.noise2 = NoiseInjection(24, 0.005)
+        self.noise3 = NoiseInjection(16, 0.01)
+
         self.film1 = FiLMLayer(64, y_dim + z_dim)
         self.film2 = FiLMLayer(24, y_dim + z_dim)
         self.film3 = FiLMLayer(16, y_dim + z_dim)
@@ -105,17 +108,17 @@ class FakeImageGenerator(nn.Module):
         y = self.conv_y1(y)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
         z = self.conv_z1(z)                                     # 64 x W/16 x H/16 -> 16 x W/8 x H/8
         f1 = torch.cat((self.conv_x1(x), y, z), dim=1)   # 128 x W/16 x H/16 -> 32 x W/8 x H/8 -> 64 x W/8 x H/8
-        f1 = self.leaky_relu(self.norm1(self.film1(f1, yz)))
+        f1 = self.leaky_relu(self.norm1(self.film1(self.noise1(f1), yz)))
 
         y = self.conv_y2(y)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         z = self.conv_z2(z)                                     # 16 x W/8 x H/8 -> 4 x W/4 x H/4
         f2 = torch.cat((self.conv_x2(f1), y, z), dim=1)  # 64 x W/8 x H/8 -> 16 x W/4 x H/4 -> 24 x W/4 x H/4
-        f2 = self.leaky_relu(self.norm2(self.film2(f2, yz)))
+        f2 = self.leaky_relu(self.norm2(self.film2(self.noise1(f2), yz)))
 
         y = self.conv_y3(y)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         z = self.conv_z3(z)                                     # 4 x W/4 x H/4 -> 4 x W/2 x H/2
         f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 24 x W/4 x H/4 -> 8 x W/2 x H/2 -> 16 x W/2 x H/2
-        f3 = self.leaky_relu(self.norm3(self.film3(f3, yz)))
+        f3 = self.leaky_relu(self.norm3(self.film3(self.noise1(f3), yz)))
 
         x = self.tanh(self.conv_x4(f3))                         # 16 x W/2 x H/2 -> 3 x W/1 x H/1
         if return_features:
@@ -134,7 +137,7 @@ class FakeImageGenerator(nn.Module):
         print("\n" + "=" * 100)
 
 
-class LabelPredictor(nn.Module):
+class LabelPredictor(nn.Module):        # todo increase model size to pick up more detail/patterns for the generator to eventually learn
     def __init__(self, output_size):
         super(LabelPredictor, self).__init__()
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
