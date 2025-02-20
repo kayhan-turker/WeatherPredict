@@ -169,7 +169,7 @@ discriminator.apply(init_weights)
 criterion_labels = nn.MSELoss()
 criterion_realism = nn.BCEWithLogitsLoss()
 
-optimizer_G = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+optimizer_G = optim.Adam(generator.parameters(), lr=0.0004, betas=(0.5, 0.999))
 optimizer_D = optim.Adam(discriminator.parameters(), lr=0.00005, betas=(0.5, 0.999))
 
 print("  Generator device:", next(generator.parameters()).device)  # Should print "cuda:0"
