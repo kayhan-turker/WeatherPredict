@@ -108,7 +108,7 @@ class FakeImageGenerator(nn.Module):
         f3 = torch.cat((self.conv_x3(f2), y, z), dim=1)  # 24 x W/4 x H/4 -> 8 x W/2 x H/2 -> 16 x W/2 x H/2
         f3 = self.leaky_relu(self.norm3(f3))
 
-        x = self.tanh(self.conv_z4(f3))                         # 16 x W/2 x H/2 -> 3 x W/1 x H/1
+        x = self.tanh(self.conv_x4(f3))                         # 16 x W/2 x H/2 -> 3 x W/1 x H/1
         if return_features:
             return x, [f1, f2, f3]
         return x
