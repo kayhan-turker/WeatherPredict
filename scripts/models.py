@@ -6,14 +6,18 @@ from config import *
 from settings import *
 
 
-def weights_init(m):
-    if isinstance(m, nn.Linear) or isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
-        init.xavier_uniform_(m.weight)
+def initialize_weights(m):
+    if isinstance(m, nn.Linear):
+        init.kaiming_normal_(m.weight, nonlinearity='leaky_relu')
         if m.bias is not None:
-            init.constant_(m.bias, 0)
+            init.zeros_(m.bias)
+    elif isinstance(m, nn.ConvTranspose2d):
+        init.kaiming_normal_(m.weight, nonlinearity='leaky_relu')
+        if m.bias is not None:
+            init.zeros_(m.bias)
     elif isinstance(m, nn.BatchNorm2d):
-        init.constant_(m.weight, 1)
-        init.constant_(m.bias, 0)
+        init.ones_(m.weight)
+        init.zeros_(m.bias)
 
 
 class NoiseInjection(nn.Module):
