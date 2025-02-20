@@ -5,20 +5,6 @@ import torch.nn.init as init
 from settings import *
 
 
-def initialize_weights(m):
-    if isinstance(m, nn.Linear):
-        init.kaiming_normal_(m.weight, nonlinearity='leaky_relu')
-        if m.bias is not None:
-            init.zeros_(m.bias)
-    elif isinstance(m, nn.ConvTranspose2d):
-        init.kaiming_normal_(m.weight, nonlinearity='leaky_relu')
-        if m.bias is not None:
-            init.zeros_(m.bias)
-    elif isinstance(m, nn.BatchNorm2d):
-        init.ones_(m.weight)
-        init.zeros_(m.bias)
-
-
 class NoiseInjection(nn.Module):
     def __init__(self, channels, weight=0.1):
         super(NoiseInjection, self).__init__()
@@ -43,13 +29,6 @@ class FiLMLayer(nn.Module):
         super().__init__()
         self.gamma = nn.Linear(num_labels, num_channels)
         self.beta = nn.Linear(num_labels, num_channels)
-        self.initialize_weights()
-
-    def initialize_weights(self):
-        nn.init.xavier_uniform_(self.gamma.weight)
-        nn.init.constant_(self.gamma.bias, 1)  # Start gamma at 1 (identity scaling)
-        nn.init.xavier_uniform_(self.beta.weight)
-        nn.init.constant_(self.beta.bias, 0)  # Start beta at 0 (no shift)
 
     def forward(self, x, channels):
         gamma = self.gamma(channels).unsqueeze(2).unsqueeze(3)
@@ -63,6 +42,41 @@ class FiLMLayer(nn.Module):
             self.beta.weight.std(dim=1, keepdim=True),
             self.beta.bias.std(keepdim=True).unsqueeze(0)
         ])
+
+
+def init_conv_weights(m):
+    if isinstance(m, nn.ConvTranspose2d):
+        nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu', a=0.2)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+
+
+def init_fc_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu', a=0.2)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+
+
+def init_bn_weights(m):
+    if isinstance(m, nn.BatchNorm2d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
+
+
+def init_film_weights(m):
+    if isinstance(m, FiLMLayer):
+        nn.init.kaiming_normal_(m.gamma.weight, mode='fan_in', nonlinearity='linear')
+        nn.init.constant_(m.gamma.bias, 0)
+        nn.init.kaiming_normal_(m.beta.weight, mode='fan_in', nonlinearity='linear')
+        nn.init.constant_(m.beta.bias, 0)
+
+
+def init_weights(m):
+    init_conv_weights(m)
+    init_fc_weights(m)
+    init_bn_weights(m)
+    init_film_weights(m)
 
 
 class FakeImageGenerator(nn.Module):
@@ -85,8 +99,8 @@ class FakeImageGenerator(nn.Module):
         self.conv_z3 = nn.ConvTranspose2d(4, 4, kernel_size=4, stride=2, padding=1)
 
         self.noise1 = NoiseInjection(64, 0.002)
-        self.noise2 = NoiseInjection(24, 0.005)
-        self.noise3 = NoiseInjection(16, 0.01)
+        self.noise2 = NoiseInjection(24, 0.004)
+        self.noise3 = NoiseInjection(16, 0.006)
 
         self.film1 = FiLMLayer(64, y_dim + z_dim)
         self.film2 = FiLMLayer(24, y_dim + z_dim)
