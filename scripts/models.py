@@ -81,9 +81,9 @@ class FakeImageGenerator(nn.Module):
         self.conv_z2 = nn.ConvTranspose2d(16, 4, kernel_size=4, stride=2, padding=1)
         self.conv_z3 = nn.ConvTranspose2d(4, 4, kernel_size=4, stride=2, padding=1)
 
-        self.norm1 = nn.BatchNorm2d(32)
+        self.norm1 = nn.BatchNorm2d(64)
         self.norm2 = nn.BatchNorm2d(16)
-        self.norm3 = nn.BatchNorm2d(8)
+        self.norm3 = nn.BatchNorm2d(12)
 
         self.leaky_relu = nn.LeakyReLU()
         self.tanh = nn.Tanh()
